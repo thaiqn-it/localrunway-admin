@@ -4,28 +4,44 @@ import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Login.css";
 
+import { localbrandsApis } from "../../apis/localbrands";
+import { API_SUCCSES, JWT_TOKEN } from "../../constants";
+
 const Login = (props) => {
   //set page title
   useEffect(() => {
     document.title = "Login Page";
   }, []);
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  const emailChangeHandler = (event) => {
-    setEmail(event.target.value);
-    console.log(email);
+  const [loginError, setLoginError] = useState(false);
+  const usernameChangeHandler = (event) => {
+    setUsername(event.target.value);
   };
 
   const passwordChangeHandler = (event) => {
     setPassword(event.target.value);
-    console.log(password);
   };
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
+    setLoginError(false);
     // api goes here
+    login(username, password);
+  };
+
+  const login = async (username, password) => {
+    try {
+      const res = await localbrandsApis.login(username, password);
+
+      if (res.status === API_SUCCSES) {
+        localStorage.setItem(JWT_TOKEN, res.data.token);
+        props.history.push("/main-page");
+      }
+    } catch (err) {
+      setLoginError(true);
+    }
   };
 
   return (
@@ -36,19 +52,20 @@ const Login = (props) => {
             <h3>Sign In</h3>
 
             <div className="form-group h-100">
-              <label>Email address</label>
+              <label>Username</label>
               <input
-                type="email"
+                type="text"
                 className="form-control"
-                placeholder="Enter email"
-                value={email}
-                onChange={emailChangeHandler}
+                placeholder="Enter Username"
+                value={username}
+                onChange={usernameChangeHandler}
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group ">
               <label>Password</label>
               <input
+                id="validationPassword"
                 type="password"
                 className="form-control"
                 placeholder="Enter password"
@@ -56,7 +73,13 @@ const Login = (props) => {
                 onChange={passwordChangeHandler}
               />
             </div>
-
+            {loginError ? (
+              <div className="alert alert-danger mt-2">
+                Invalid username and/or password please try again
+              </div>
+            ) : (
+              ""
+            )}
             <div className="form-group">
               <div className="custom-control custom-checkbox">
                 <input

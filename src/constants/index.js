@@ -1,0 +1,4 @@
+const JWT_TOKEN = "JWT_TOKEN";
+const API_SUCCSES = 200;
+
+export { JWT_TOKEN, API_SUCCSES };
