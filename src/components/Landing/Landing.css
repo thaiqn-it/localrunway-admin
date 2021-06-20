@@ -1,0 +1,9 @@
+.side-nav-bar {
+  background-color: #292d4e;
+  width: 250px;
+  height: 100vh;
+}
+.landing-wrapper {
+  display: flex;
+  height: 100%;
+}
