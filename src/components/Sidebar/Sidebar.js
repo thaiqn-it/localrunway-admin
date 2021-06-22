@@ -1,8 +1,11 @@
-import React from "react";
-import { Link, Router, Switch } from "react-router-dom";
+import React, { useContext } from "react";
+import { Link } from "react-router-dom";
+import { context } from "../StateProvider/StateProvider";
 import { SidebarData } from "./SidebarData";
 
 export default function Sidebar(props) {
+  const { state, dispatch } = useContext(context);
+
   const SidebarLink = ({ item }) => {
     return (
       <>

@@ -1,68 +1,138 @@
-import React, { useState, useEffect } from "react";
-import MaterialTable from "material-table";
+import { faCoffee, faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import React, { useState, useEffect, useContext } from "react";
+
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
+import { context } from "../StateProvider/StateProvider";
 
 export default function ListProduct(props) {
   const columns = [
     {
       title: "Thumbnail",
-      field: "thumbnailUrl",
-      render: (rowData) => <img src={rowData.thumbnailUrl} />,
     },
     {
       title: "Name",
-      field: "name",
     },
     {
       title: "Status",
-      field: "status",
     },
     {
       title: "Price",
-      field: "status",
     },
     {
       title: "Feedback",
-      field: "feedback",
     },
     {
       title: "Quantity",
-      field: "quantity",
+    },
+    {
+      title: "Action",
     },
   ];
+  const { state, dispatch } = useContext(context);
   const [productList, setProductList] = useState([]);
-
-  const getData = async (brandId) => {
-    try {
-      const res = await productApis.getListProductByBrand(brandId);
-      if (res.status === API_SUCCSES) {
-        let productData = res.data.products;
-        console.log(productData);
-        setProductList(productData);
-      }
-    } catch (err) {}
+  const [page, setPage] = useState(1);
+  const [brandId, setbrandId] = useState("");
+  const [hasNext, setHasNext] = useState(true);
+  const [havPrev, setHavPrev] = useState(true);
+  const getData = async (brandId, page) => {
+    console.log(page);
+    if (brandId != null) {
+      try {
+        const res = await productApis.getListProductByBrand(brandId, page);
+        if (res.status === API_SUCCSES) {
+          setProductList(res.data.products);
+          setPage(res.data.page);
+          setHasNext(res.data.hasNextPage);
+          setHavPrev(res.data.hasPrevPage);
+          console.log(res.data);
+        }
+      } catch (err) {}
+    }
   };
   useEffect(() => {
-    getData("60ae5bbd1bca945ff4b5322d");
+    let brandId = state.localbrand === null ? "" : state.localbrand._id;
+    setbrandId(brandId);
+    getData(brandId, 1);
   }, []);
 
   return (
     <>
       <div>
-        <MaterialTable
-          title={"List of Product"}
-          columns={columns}
-          data={productList}
-          options={{ search: false }}
-          actions={[
-            {
-              icon: "save",
-              tooltip: "Save Product",
-              onClick: (event, rowData) => getData("60ae5bbd1bca945ff4b5322d"),
-            },
-          ]}
-        />
+        <table class="table">
+          <thead>
+            <tr>
+              {columns.map((item, index) => {
+                return <th key={index}>{item.title}</th>;
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {productList.map((item, index) => {
+              return (
+                <tr id={index}>
+                  <td>
+                    <img src={item.thumbnailUrl} width={100} height={100} />
+                  </td>
+                  <td>{item.name}</td>
+                  <td>{item.status}</td>
+                  <td>{item.price}</td>
+                  <td>{item.feedback}</td>
+                  <td>{item.quantity}</td>
+                  <td>
+                    <button
+                      onClick={(event) =>
+                        console.log(
+                          "row" +
+                            event.target.parentNode.parentNode.id +
+                            "clicked"
+                        )
+                      }
+                    >
+                      <FontAwesomeIcon icon={faPen} />
+                    </button>
+                    <button
+                      onClick={(event) =>
+                        console.log(
+                          "row" +
+                            event.target.parentNode.parentNode.id +
+                            "clicked"
+                        )
+                      }
+                    >
+                      <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <nav>
+          <ul class="pagination">
+            <li class={havPrev ? "page-item" : "page-item disabled"}>
+              <a
+                class="page-link"
+                href="#"
+                onClick={() => getData(brandId, page - 1)}
+              >
+                Previous
+              </a>
+            </li>
+
+            <li class={hasNext ? "page-item" : "page-item disabled"}>
+              <a
+                class="page-link"
+                href="#"
+                onClick={() => getData(brandId, page + 1)}
+              >
+                Next
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </>
   );

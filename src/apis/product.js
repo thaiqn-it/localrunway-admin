@@ -1,7 +1,9 @@
 import { defaultInstance } from ".";
 
-const getListProductByBrand = (brandId) => {
-  return defaultInstance.get("/products/", { params: { brandIds: brandId } });
+const getListProductByBrand = (brandId, page) => {
+  return defaultInstance.get("/products/", {
+    params: { brandIds: brandId, page: page },
+  });
 };
 
 export const productApis = {

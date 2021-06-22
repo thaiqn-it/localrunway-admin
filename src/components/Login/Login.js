@@ -1,11 +1,12 @@
-import React, { useEffect, Fragment, useState } from "react";
+import React, { useEffect, Fragment, useState, useContext } from "react";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Login.css";
 
-import { localbrandsApis } from "../../apis/localbrands";
 import { API_SUCCSES, JWT_TOKEN } from "../../constants";
+import { authService } from "../../service/auth";
+import { context } from "../StateProvider/StateProvider";
 
 const Login = (props) => {
   //set page title
@@ -16,6 +17,9 @@ const Login = (props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
+  const [authError, setAuthError] = useState(false);
+  const { state, dispatch } = useContext(context);
+
   const usernameChangeHandler = (event) => {
     setUsername(event.target.value);
   };
@@ -27,20 +31,34 @@ const Login = (props) => {
   const onSubmitHandler = (event) => {
     event.preventDefault();
     setLoginError(false);
+    setAuthError(false);
     // api goes here
     login(username, password);
   };
 
   const login = async (username, password) => {
     try {
-      const res = await localbrandsApis.login(username, password);
+      const res = await authService.login(username, password);
 
       if (res.status === API_SUCCSES) {
         localStorage.setItem(JWT_TOKEN, res.data.token);
+        authUser(res.data.token);
         props.history.push("/main-page");
       }
     } catch (err) {
       setLoginError(true);
+    }
+  };
+
+  const authUser = async (token) => {
+    try {
+      const res = await authService.getAuthInfo(token);
+      if (res.status === API_SUCCSES) {
+        const localbrand = res.data;
+        dispatch({ type: "LOGIN", payload: localbrand });
+      }
+    } catch (err) {
+      console.log("Auth Error");
     }
   };
 
@@ -76,6 +94,13 @@ const Login = (props) => {
             {loginError ? (
               <div className="alert alert-danger mt-2">
                 Invalid username and/or password please try again
+              </div>
+            ) : (
+              ""
+            )}
+            {authError ? (
+              <div className="alert alert-danger mt-2">
+                Server Error please try again
               </div>
             ) : (
               ""
