@@ -1,11 +1,10 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import { context } from "../StateProvider/StateProvider";
 import { SidebarData } from "./SidebarData";
+import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import "../../../node_modules/jquery/dist/jquery.min.js";
 
 export default function Sidebar(props) {
-  const { state, dispatch } = useContext(context);
-
   const SidebarLink = ({ item }) => {
     return (
       <>

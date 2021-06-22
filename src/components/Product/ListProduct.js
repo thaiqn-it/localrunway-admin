@@ -1,11 +1,14 @@
-import { faCoffee, faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 
 import React, { useState, useEffect, useContext } from "react";
 
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
-import { context } from "../StateProvider/StateProvider";
+import AppContext from "../store/app-context";
+
+import classes from "./ListProduct.module.css";
 
 export default function ListProduct(props) {
   const columns = [
@@ -31,14 +34,16 @@ export default function ListProduct(props) {
       title: "Action",
     },
   ];
-  const { state, dispatch } = useContext(context);
+  // const { state, dispatch } = useContext(context);
+  const appCtx = useContext(AppContext);
   const [productList, setProductList] = useState([]);
-  const [page, setPage] = useState(1);
+
+  const [page, setPage] = useState(2);
   const [brandId, setbrandId] = useState("");
   const [hasNext, setHasNext] = useState(true);
   const [havPrev, setHavPrev] = useState(true);
+
   const getData = async (brandId, page) => {
-    console.log(page);
     if (brandId != null) {
       try {
         const res = await productApis.getListProductByBrand(brandId, page);
@@ -47,20 +52,22 @@ export default function ListProduct(props) {
           setPage(res.data.page);
           setHasNext(res.data.hasNextPage);
           setHavPrev(res.data.hasPrevPage);
-          console.log(res.data);
         }
-      } catch (err) {}
+      } catch (err) {
+
+      }
     }
   };
+
   useEffect(() => {
-    let brandId = state.localbrand === null ? "" : state.localbrand._id;
+    let brandId = appCtx.localbrand === null ? "" : appCtx.localbrand._id;
     setbrandId(brandId);
     getData(brandId, 1);
   }, []);
 
   return (
     <>
-      <div>
+      <div className={classes.container}>
         <table class="table">
           <thead>
             <tr>
@@ -74,7 +81,7 @@ export default function ListProduct(props) {
               return (
                 <tr id={index}>
                   <td>
-                    <img src={item.thumbnailUrl} width={100} height={100} />
+                    <img src={item.thumbnailUrl} width={100} height={100} alt="product image"/>
                   </td>
                   <td>{item.name}</td>
                   <td>{item.status}</td>
@@ -83,10 +90,10 @@ export default function ListProduct(props) {
                   <td>{item.quantity}</td>
                   <td>
                     <button
-                      onClick={(event) =>
-                        console.log(
+                      onClick={() =>
+                          console.log(
                           "row" +
-                            event.target.parentNode.parentNode.id +
+                            `${index}` +
                             "clicked"
                         )
                       }
@@ -110,29 +117,7 @@ export default function ListProduct(props) {
             })}
           </tbody>
         </table>
-        <nav>
-          <ul class="pagination">
-            <li class={havPrev ? "page-item" : "page-item disabled"}>
-              <a
-                class="page-link"
-                href="#"
-                onClick={() => getData(brandId, page - 1)}
-              >
-                Previous
-              </a>
-            </li>
-
-            <li class={hasNext ? "page-item" : "page-item disabled"}>
-              <a
-                class="page-link"
-                href="#"
-                onClick={() => getData(brandId, page + 1)}
-              >
-                Next
-              </a>
-            </li>
-          </ul>
-        </nav>
+        
       </div>
     </>
   );

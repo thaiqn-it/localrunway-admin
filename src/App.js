@@ -1,7 +1,5 @@
 import React from "react";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-// import '../node_modules/bootstrap/js/src/collapse';
-// import '../node_modules/bootstrap/js/src/dropdown';
 import "../node_modules/jquery/dist/jquery.min.js";
 
 import "./App.css";
@@ -11,7 +9,7 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import "./components/FontawesomeIcons/index";
 import Login from "./components/Login/Login";
 import Landing from "./components/Landing/Landing";
-import StateProvider from "./components/StateProvider/StateProvider";
+import StateProvider from "./components/store/StateProvider";
 
 function App() {
   return (
@@ -47,7 +45,6 @@ function App() {
             <Route exact path="/" component={Login} />
             <Route path="/sign-in" component={Login} />
             <Route path="/main-page" component={Landing} />
-            {/* <Route path="/sign-up" component={SignUp} /> */}
           </Switch>
         </div>
       </Router>

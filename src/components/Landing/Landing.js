@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { authService } from "../../service/auth";
 import ListProduct from "../Product/ListProduct";
 import Sidebar from "../Sidebar/Sidebar";
@@ -10,23 +10,21 @@ const Landing = (props) => {
     authService.logout();
     props.history.push("/sign-in");
   };
-
-  let { path, url } = useRouteMatch();
   return (
-    <>
+    <Router>
       <div className="landing-wrapper">
-        <div className="side-nav-bar">
+        <div className="side-nav-bar shadow-lg bg-white">
           <Sidebar />
         </div>
+
         <div className="main-landing">
           <Switch>
-            <Route exact path={url} component={ListProduct}></Route>
+            <Route path={"/main-page/"} component={ListProduct}></Route>
             <Route path={"/main-page/products"} component={ListProduct}></Route>
-            <Route></Route>
           </Switch>
         </div>
       </div>
-    </>
+    </Router>
   );
 };
 

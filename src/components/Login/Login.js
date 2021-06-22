@@ -6,7 +6,7 @@ import "./Login.css";
 
 import { API_SUCCSES, JWT_TOKEN } from "../../constants";
 import { authService } from "../../service/auth";
-import { context } from "../StateProvider/StateProvider";
+import AppContext from "../store/app-context";
 
 const Login = (props) => {
   //set page title
@@ -14,11 +14,12 @@ const Login = (props) => {
     document.title = "Login Page";
   }, []);
 
+  const appCtx = useContext(AppContext);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const [authError, setAuthError] = useState(false);
-  const { state, dispatch } = useContext(context);
 
   const usernameChangeHandler = (event) => {
     setUsername(event.target.value);
@@ -55,7 +56,7 @@ const Login = (props) => {
       const res = await authService.getAuthInfo(token);
       if (res.status === API_SUCCSES) {
         const localbrand = res.data;
-        dispatch({ type: "LOGIN", payload: localbrand });
+        appCtx.login(localbrand);
       }
     } catch (err) {
       console.log("Auth Error");
