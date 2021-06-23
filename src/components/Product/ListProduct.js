@@ -1,7 +1,6 @@
 import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-
 import React, { useState, useEffect, useContext } from "react";
 
 import { productApis } from "../../apis/product";
@@ -53,9 +52,7 @@ export default function ListProduct(props) {
           setHasNext(res.data.hasNextPage);
           setHavPrev(res.data.hasPrevPage);
         }
-      } catch (err) {
-
-      }
+      } catch (err) {}
     }
   };
 
@@ -81,7 +78,12 @@ export default function ListProduct(props) {
               return (
                 <tr id={index}>
                   <td>
-                    <img src={item.thumbnailUrl} width={100} height={100} alt="product image"/>
+                    <img
+                      src={item.thumbnailUrl}
+                      width={100}
+                      height={100}
+                      alt="product image"
+                    />
                   </td>
                   <td>{item.name}</td>
                   <td>{item.status}</td>
@@ -91,11 +93,7 @@ export default function ListProduct(props) {
                   <td>
                     <button
                       onClick={() =>
-                          console.log(
-                          "row" +
-                            `${index}` +
-                            "clicked"
-                        )
+                        console.log("row" + `${index}` + "clicked")
                       }
                     >
                       <FontAwesomeIcon icon={faPen} />
@@ -117,7 +115,29 @@ export default function ListProduct(props) {
             })}
           </tbody>
         </table>
-        
+        <nav>
+          <ul class="pagination" style={{ direction: "rtl" }}>
+            <li class={hasNext ? "page-item" : "page-item disabled"}>
+              <a
+                class="page-link"
+                href="#"
+                onClick={() => getData(brandId, page + 1)}
+              >
+                Next
+              </a>
+            </li>
+
+            <li class={havPrev ? "page-item" : "page-item disabled"}>
+              <a
+                class="page-link"
+                href="#"
+                onClick={() => getData(brandId, page - 1)}
+              >
+                Previous
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </>
   );
