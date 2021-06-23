@@ -6,6 +6,11 @@ const getListProductByBrand = (brandId, page) => {
   });
 };
 
+const deleteProductById = (id) => {
+  return defaultInstance.delete(`/products/${id}`);
+};
+
 export const productApis = {
   getListProductByBrand,
+  deleteProductById,
 };

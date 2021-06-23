@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { SidebarData } from "./SidebarData";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";

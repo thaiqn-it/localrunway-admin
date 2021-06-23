@@ -10,6 +10,11 @@ import AppContext from "../store/app-context";
 import classes from "./ListProduct.module.css";
 
 export default function ListProduct(props) {
+  //set page title
+  useEffect(() => {
+    document.title = "Products Information";
+  }, []);
+
   const columns = [
     {
       title: "Thumbnail",
@@ -37,7 +42,7 @@ export default function ListProduct(props) {
   const appCtx = useContext(AppContext);
   const [productList, setProductList] = useState([]);
 
-  const [page, setPage] = useState(2);
+  const [page, setPage] = useState(1);
   const [brandId, setbrandId] = useState("");
   const [hasNext, setHasNext] = useState(true);
   const [havPrev, setHavPrev] = useState(true);
@@ -52,15 +57,32 @@ export default function ListProduct(props) {
           setHasNext(res.data.hasNextPage);
           setHavPrev(res.data.hasPrevPage);
         }
-      } catch (err) {}
+      } catch (err) {
+        //Exception Handler later
+      }
     }
+  };
+
+  const getProductList = () => {
+    getData(brandId, page);
   };
 
   useEffect(() => {
     let brandId = appCtx.localbrand === null ? "" : appCtx.localbrand._id;
     setbrandId(brandId);
-    getData(brandId, 1);
+    getProductList();
   }, []);
+
+  const deleteProduct = async (id) => {
+    try {
+      const res = await productApis.deleteProductById(id);
+      if (res.status === API_SUCCSES) {
+        getData(brandId, page);
+      }
+    } catch (err) {
+      //Exception Handler later
+    }
+  };
 
   return (
     <>
@@ -92,21 +114,13 @@ export default function ListProduct(props) {
                   <td>{item.quantity}</td>
                   <td>
                     <button
-                      onClick={() =>
-                        console.log("row" + `${index}` + "clicked")
-                      }
+                      onClick={() => {
+                        console.log("UPDATE!!!!!");
+                      }}
                     >
                       <FontAwesomeIcon icon={faPen} />
                     </button>
-                    <button
-                      onClick={(event) =>
-                        console.log(
-                          "row" +
-                            event.target.parentNode.parentNode.id +
-                            "clicked"
-                        )
-                      }
-                    >
+                    <button onClick={() => deleteProduct(item._id)}>
                       <FontAwesomeIcon icon={faTrashAlt} />
                     </button>
                   </td>

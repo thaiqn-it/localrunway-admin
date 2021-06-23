@@ -1,19 +1,17 @@
 import React, { useReducer } from "react";
-import AppContext from './app-context';
+import AppContext from "./app-context";
 
 const initialState = {
   localbrand: null,
-  products: [],
 };
 
 const appReducer = (state, action) => {
-  
-  if (action.type === 'LOGIN') {
+  if (action.type === "LOGIN") {
     const updatedLocalbrand = action.localbrand;
     return {
       ...state,
-      updatedLocalbrand
-    }
+      localbrand: updatedLocalbrand,
+    };
   }
   // switch (action.type) {
   //   case "LOGIN":
@@ -31,36 +29,17 @@ const appReducer = (state, action) => {
 const StateProvider = ({ children }) => {
   const [appState, dispatchAppAction] = useReducer(appReducer, initialState);
 
-  const addProductHandler = product => {
-    dispatchAppAction({ type: 'ADD_PRODUCT', product: product });
+  const loginHandler = (localbrand) => {
+    dispatchAppAction({ type: "LOGIN", localbrand: localbrand });
   };
-
-  const deleteProductHandler = id => {
-    dispatchAppAction({ type: 'DELETE_PRODUCT', localbrand: id });
-  };
-  
-  const updateProductHandler = product => {
-    dispatchAppAction({ type: 'UPDATE_PRODUCT', localbrand: product });
-  };
-
-  const updateOrderHandler = order => {
-    dispatchAppAction({ type: 'UPDATE_ORDER', localbrand: order });
-  };
-
-  const loginHandler = localbrand => {
-    dispatchAppAction({ type: 'LOGIN', localbrand: localbrand });
-  }
 
   const appContext = {
     localbrand: appState.localbrand,
-    products: appState.products,
-    addProduct: addProductHandler,
-    deleteProduct: deleteProductHandler,
-    updateProduct: updateProductHandler,
-    updateOrder: updateOrderHandler,
     login: loginHandler,
-  }
-  return <AppContext.Provider value={appContext}>{children}</AppContext.Provider>;
+  };
+  return (
+    <AppContext.Provider value={appContext}>{children}</AppContext.Provider>
+  );
 };
 
 export default StateProvider;
