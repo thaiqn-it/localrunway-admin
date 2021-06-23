@@ -65,7 +65,7 @@ export default function ListProduct(props) {
   return (
     <>
       <div className={classes.container}>
-        <table class="table">
+        <table className="table">
           <thead>
             <tr>
               {columns.map((item, index) => {
@@ -76,7 +76,7 @@ export default function ListProduct(props) {
           <tbody>
             {productList.map((item, index) => {
               return (
-                <tr id={index}>
+                <tr id={item._id}>
                   <td>
                     <img
                       src={item.thumbnailUrl}
@@ -116,10 +116,10 @@ export default function ListProduct(props) {
           </tbody>
         </table>
         <nav>
-          <ul class="pagination" style={{ direction: "rtl" }}>
-            <li class={hasNext ? "page-item" : "page-item disabled"}>
+          <ul className="pagination" style={{ direction: "rtl" }}>
+            <li className={hasNext ? "page-item" : "page-item disabled"}>
               <a
-                class="page-link"
+                className="page-link"
                 href="#"
                 onClick={() => getData(brandId, page + 1)}
               >
@@ -127,9 +127,9 @@ export default function ListProduct(props) {
               </a>
             </li>
 
-            <li class={havPrev ? "page-item" : "page-item disabled"}>
+            <li className={havPrev ? "page-item" : "page-item disabled"}>
               <a
-                class="page-link"
+                className="page-link"
                 href="#"
                 onClick={() => getData(brandId, page - 1)}
               >
