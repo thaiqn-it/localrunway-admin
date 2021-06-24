@@ -3,8 +3,10 @@ import { WithContext as ReactTags } from "react-tag-input";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../../../node_modules/jquery/dist/jquery.min.js";
 
-const TagInput = (props) => {
-  const [tags, setTags] = useState([]);
+const TagInput = ({ tags, deleteTagHandle, addTagHandle }, props) => {
+  // console.log(props.productHashtags);
+
+  //   console.log(tags);
 
   const KeyCodes = {
     comma: 188,
@@ -37,16 +39,11 @@ const TagInput = (props) => {
   ]);
 
   const handleAddition = (tag) => {
-    console.log(tag);
-    setTags([...tags, { id: tag.id, text: tag.text }]);
-    console.log(tags);
+    deleteTagHandle(tag);
   };
 
   const handleDelete = (i) => {
-    const updatedTags = [...tags];
-    updatedTags.splice(i, 1);
-    setTags(updatedTags);
-    console.log(tags);
+    addTagHandle(i);
   };
 
   return (

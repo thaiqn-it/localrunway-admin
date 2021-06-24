@@ -1,9 +1,12 @@
+import { event } from "jquery";
 import React, { useContext, useState, useEffect } from "react";
 import { categoryApis } from "../../apis/category";
 import { productApis } from "../../apis/product";
 import { API_BAD_REQUEST, API_SUCCSES } from "../../constants";
 import AppContext from "../store/app-context";
+import TagInput from "../UI/TagInput";
 import classes from "./CreateProduct.module.css";
+import NewProductDetail from "./NewProductDetail";
 
 export default function CreateProduct(props) {
   const appContx = useContext(AppContext);
@@ -17,10 +20,15 @@ export default function CreateProduct(props) {
   const [brandId, setbrandId] = useState("");
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
+
   const [categoryId, setCategoryId] = useState("");
   const [categoryList, setCategoryList] = useState([]);
+  const [color, setColor] = useState([]);
+  const [hashtags, setHashtags] = useState([]);
+  const [productList, setProductList] = useState([]);
+
   const [error, setError] = useState(submitError);
+
   const [generalProduct, setGeneralProduct] = useState(true);
   const [detailProduct, setDetailProduct] = useState(true);
 
@@ -31,12 +39,21 @@ export default function CreateProduct(props) {
   const descriptionChangeHandler = (event) => {
     setDescription(event.target.value);
   };
-  const priceChangeHandler = (event) => {
-    setPrice(event.target.value);
+
+  const handleDetail = (productDetail) => {
+    // productList[productDetail.index] = {
+    //   ...productDetail,
+    // };
+    console.log(productDetail);
   };
-  const categoryChangeHandler = (event) => {
-    setCategoryId(event.target.value);
+
+  const colorDeleteHandle = (i) => {
+    color.slice(i, 1);
   };
+  const colorAddHandle = (tag) => {};
+  useEffect(() => {
+    color.map((item, index) => {});
+  }, [color]);
 
   const getCategoryList = async () => {
     try {
@@ -57,7 +74,6 @@ export default function CreateProduct(props) {
         const res = await productApis.postRootProduct(
           productName,
           description,
-          price,
           categoryId,
           brandId
         );
@@ -156,15 +172,7 @@ export default function CreateProduct(props) {
 
         <div className="form-group">
           <label for="description">Hash Tag</label>
-          <input
-            type="text"
-            className={
-              error.price != null ? "form-control is-invalid" : "form-control"
-            }
-            id="description"
-            // onChange={priceChangeHandler}
-            placeholder=""
-          />
+          <TagInput />
           {error.price === null ? (
             ""
           ) : (
@@ -181,6 +189,36 @@ export default function CreateProduct(props) {
     );
   };
 
+  const ProductDetailTable = () => {
+    return (
+      <>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Color</th>
+              <th scope="col">Size</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Price</th>
+              <th scope="col">Thumbnail</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {color.map((item, index) => {
+              return (
+                <NewProductDetail
+                  item={item}
+                  index={index}
+                  handleDetail={handleDetail}
+                />
+              );
+            })}
+          </tbody>
+        </table>
+      </>
+    );
+  };
+
   const CreateDetailProdct = () => {
     return (
       <>
@@ -188,16 +226,10 @@ export default function CreateProduct(props) {
           <h1>Product Details</h1>
           <div className="form-group has-validation">
             <label for="productName">Color</label>
-            <input
-              type="text"
-              className={
-                error.productName != null
-                  ? "form-control is-invalid"
-                  : "form-control"
-              }
-              id="productName"
-              // onChange={console.log("Color Change")}
-              placeholder=""
+            <TagInput
+              tags={color}
+              deleteTag={colorDeleteHandle}
+              addTag={colorAddHandle}
             />
             {error.productName != null ? (
               <div id="validationServer03Feedback" class="invalid-feedback">
@@ -207,67 +239,7 @@ export default function CreateProduct(props) {
               ""
             )}
           </div>
-
-          <div className="form-group">
-            <label for="description">Size</label>
-            <input
-              type="text"
-              className={
-                error.description != null
-                  ? "form-control is-invalid"
-                  : "form-control"
-              }
-              id="description"
-              // onChange={descriptionChangeHandler}
-              placeholder=""
-            />
-            {error.description != null ? (
-              <div id="validationServer03Feedback" class="invalid-feedback">
-                {error.description}
-              </div>
-            ) : (
-              ""
-            )}
-          </div>
-
-          <div className="form-group">
-            <label for="description">Quantity</label>
-            <input
-              type="text"
-              className={
-                error.price != null ? "form-control is-invalid" : "form-control"
-              }
-              id="description"
-              // onChange={priceChangeHandler}
-              placeholder=""
-            />
-            {error.price === null ? (
-              ""
-            ) : (
-              <div id="validationServer03Feedback" class="invalid-feedback">
-                {error.price}
-              </div>
-            )}
-          </div>
-          <div className="form-group">
-            <label for="description">Price</label>
-            <input
-              type="text"
-              className={
-                error.price != null ? "form-control is-invalid" : "form-control"
-              }
-              id="description"
-              // onChange={priceChangeHandler}
-              placeholder=""
-            />
-            {error.price === null ? (
-              ""
-            ) : (
-              <div id="validationServer03Feedback" class="invalid-feedback">
-                {error.price}
-              </div>
-            )}
-          </div>
+          {color.length > 0 && <ProductDetailTable />}
 
           <button type="submit" class="btn btn-primary" onClick={handleSubmit}>
             Submit
