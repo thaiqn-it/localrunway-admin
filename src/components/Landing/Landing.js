@@ -52,6 +52,7 @@ const Landing = (props) => {
             path={`${path}/productDetail`}
             component={() => <ProductDetail id={productId} />}
           />
+          <Route path={"/main-page/create"} component={CreateProduct}></Route>
         </Switch>
       </div>
     </div>
