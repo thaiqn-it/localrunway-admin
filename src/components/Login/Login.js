@@ -129,8 +129,8 @@ const Login = (props) => {
             <p className="forgot-password text-right">
               Forgot <a href="#">password?</a>
             </p>
-            <p class="text-center">Or Login with</p>
-            <p class="text-center">
+            <p className="text-center">Or Login with</p>
+            <p className="text-center">
               <FontAwesomeIcon
                 className="login-icon"
                 icon={["fab", "facebook"]}

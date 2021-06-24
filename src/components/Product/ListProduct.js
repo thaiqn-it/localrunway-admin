@@ -1,11 +1,10 @@
 import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import React, { useState, useEffect, useContext } from "react";
-
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import AppContext from "../store/app-context";
+import { useHistory } from "react-router-dom";
 
 import classes from "./ListProduct.module.css";
 
@@ -40,9 +39,10 @@ export default function ListProduct(props) {
   ];
   // const { state, dispatch } = useContext(context);
   const appCtx = useContext(AppContext);
-  const [productList, setProductList] = useState([]);
+  const history = useHistory();
 
-  const [page, setPage] = useState(1);
+  const [productList, setProductList] = useState([]);
+  const [page, setPage] = useState();
   const [brandId, setbrandId] = useState("");
   const [hasNext, setHasNext] = useState(true);
   const [havPrev, setHavPrev] = useState(true);
@@ -63,14 +63,11 @@ export default function ListProduct(props) {
     }
   };
 
-  const getProductList = () => {
-    getData(brandId, page);
-  };
-
   useEffect(() => {
     let brandId = appCtx.localbrand === null ? "" : appCtx.localbrand._id;
+    const initialPage = 1;
     setbrandId(brandId);
-    getProductList();
+    getData(brandId, initialPage);
   }, []);
 
   const deleteProduct = async (id) => {
@@ -82,6 +79,11 @@ export default function ListProduct(props) {
     } catch (err) {
       //Exception Handler later
     }
+  };
+
+  const updateProduct = (id) => {
+    props.onGetProductId(id);
+    history.push("/main-page/productDetail");
   };
 
   return (
@@ -104,7 +106,7 @@ export default function ListProduct(props) {
                       src={item.thumbnailUrl}
                       width={100}
                       height={100}
-                      alt="product image"
+                      alt="nice clothes"
                     />
                   </td>
                   <td>{item.name}</td>
@@ -113,11 +115,7 @@ export default function ListProduct(props) {
                   <td>{item.feedback}</td>
                   <td>{item.quantity}</td>
                   <td>
-                    <button
-                      onClick={() => {
-                        console.log("UPDATE!!!!!");
-                      }}
-                    >
+                    <button onClick={() => updateProduct(item._id)}>
                       <FontAwesomeIcon icon={faPen} />
                     </button>
                     <button onClick={() => deleteProduct(item._id)}>
@@ -132,23 +130,23 @@ export default function ListProduct(props) {
         <nav>
           <ul className="pagination" style={{ direction: "rtl" }}>
             <li className={hasNext ? "page-item" : "page-item disabled"}>
-              <a
+              <button
                 className="page-link"
-                href="#"
+                type="button"
                 onClick={() => getData(brandId, page + 1)}
               >
                 Next
-              </a>
+              </button>
             </li>
 
             <li className={havPrev ? "page-item" : "page-item disabled"}>
-              <a
+              <button
                 className="page-link"
-                href="#"
+                type="button"
                 onClick={() => getData(brandId, page - 1)}
               >
                 Previous
-              </a>
+              </button>
             </li>
           </ul>
         </nav>
