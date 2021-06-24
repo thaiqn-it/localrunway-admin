@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import classes from "./ProductDetail.module.css";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../../../node_modules/jquery/dist/jquery.min.js";
-import "../../../node_modules/react-bootstrap-tagsinput/dist/index.css";
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import Select from "react-select";
 import { categoryApis } from "../../apis/category";
-import TagInput from "../UI/TagInput";
+// import TagInput from "../UI/TagInput";
+import AppContext from "../store/app-context";
 
 const ProductDetail = (props) => {
+  const appCtx = useContext(AppContext);
   const [hashtags, setHashtags] = useState([]);
   const [existingProduct, setExistingProduct] = useState();
 
@@ -40,11 +41,6 @@ const ProductDetail = (props) => {
     { value: "INACTIVE", label: "INACTIVE" },
   ];
 
-  const hashtagsInput = (hashtag) => {
-    setHashtags(hashtag);
-    console.log(hashtags);
-  };
-
   const transformCategories = (categories) => {
     // console.log("FROM TRANSFORM");
     let catesType = [];
@@ -60,11 +56,14 @@ const ProductDetail = (props) => {
     console.log(event.target.files);
   };
 
+  const hashtagInputHandler = (hashtags) => {
+    setHashtags(hashtags);
+  };
+
   const getExistingProduct = async (id) => {
     const res = await productApis.getProductById(id);
     if (res.status === API_SUCCSES) {
       setExistingProduct(res.data.product);
-      // console.log(res.data.product);
       setName(res.data.product.name);
       setType(res.data.product.type);
       setStatus(res.data.product.status);
@@ -98,6 +97,36 @@ const ProductDetail = (props) => {
     getCategory(props.id);
   }, []);
 
+  const submitHandler = async (ev) => {
+    ev.preventDefault();
+    const id = existingProduct._id;
+    // console.log(appCtx.localbrand._id);
+    const product = {
+      name: name,
+      color: color,
+      size: size,
+      price: price,
+      quantity: quantity,
+      status: status,
+      type: type,
+      thumbnailUrl:
+        "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
+      media: [
+        "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
+      ],
+      description: description,
+      brandId: appCtx.localbrand._id,
+      categoryId: categoryId,
+    };
+    // console.log(product);
+    try {
+      const res = await productApis.updateProductById(id, product);
+      console.log(res.data);
+    } catch (error) {
+      console.log("ERROR", error.message);
+    }
+  };
+
   return (
     <div className={classes.container}>
       <form>
@@ -119,7 +148,7 @@ const ProductDetail = (props) => {
               options={productType}
               value={productType.find((obj) => obj.value === type)}
               required
-              onChange={() => {}}
+              onChange={(productType) => setType(productType)}
             />
           </div>
           <div className="form-group col-md-3">
@@ -128,14 +157,14 @@ const ProductDetail = (props) => {
               options={statusType}
               value={statusType.find((obj) => obj.value === status)}
               required
-              onChange={() => {}}
+              onChange={(status) => setStatus(status.value)}
             />
           </div>
         </div>
         <div className="form-group">
           <label htmlFor="textareaDes">Description</label>
           <textarea
-            onChange={() => {}}
+            onChange={(event) => setDescription(event.target.value)}
             value={description}
             className="form-control"
             id="textareaDes"
@@ -148,14 +177,17 @@ const ProductDetail = (props) => {
               options={categoriesType}
               value={categoriesType.find((obj) => obj.value === categoryId)}
               required
-              onChange={() => {}}
+              onChange={(cate) => setCategoryId(cate.value)}
             />
           </div>
         </div>
         <div className="form-group">
           <label htmlFor="inputCategory">Hashtags</label>
           <div className="form-group">
-            <TagInput productHashtags={productHashtags} />
+            {/* <TagInput
+              productHashtags={productHashtags}
+              onInput={hashtagInputHandler}
+            /> */}
           </div>
         </div>
         <div className="form-group">
@@ -178,6 +210,8 @@ const ProductDetail = (props) => {
               type="number"
               className="form-control"
               placeholder="Product Price"
+              value={price}
+              onChange={(event) => setPrice(parseInt(event.target.value))}
             ></input>
           </div>
           <div className="form-group col-md-4">
@@ -186,6 +220,8 @@ const ProductDetail = (props) => {
               type="text"
               className="form-control"
               placeholder="Product Size"
+              value={size}
+              onChange={(event) => setSize(event.target.value)}
             ></input>
           </div>
           <div className="form-group col-md-4">
@@ -194,6 +230,8 @@ const ProductDetail = (props) => {
               type="text"
               className="form-control"
               placeholder="Product Color"
+              value={color}
+              onChange={(event) => setColor(event.target.value)}
             ></input>
           </div>
         </div>
@@ -204,6 +242,8 @@ const ProductDetail = (props) => {
               type="number"
               className="form-control"
               placeholder="Product Quantity"
+              value={quantity}
+              onChange={(event) => setQuantity(parseInt(event.target.value))}
             ></input>
           </div>
         </div>
@@ -219,6 +259,15 @@ const ProductDetail = (props) => {
               />
             </div>
           </div>
+        </div>
+        <div className="form-group">
+          <button
+            onClick={submitHandler}
+            type="button"
+            className="btn btn-primary"
+          >
+            Update
+          </button>
         </div>
       </form>
     </div>

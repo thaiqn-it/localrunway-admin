@@ -6,10 +6,11 @@ const initialState = {
 };
 
 const appReducer = (state, action) => {
+  let updatedState = { ...state };
   if (action.type === "LOGIN") {
     const updatedLocalbrand = action.localbrand;
-    return {
-      ...state,
+    updatedState = {
+      ...updatedState,
       localbrand: updatedLocalbrand,
     };
   }
@@ -23,13 +24,14 @@ const appReducer = (state, action) => {
   //   default:
   //     throw new Error();
   // }
-  return initialState;
+  return updatedState;
 };
 
 const StateProvider = ({ children }) => {
   const [appState, dispatchAppAction] = useReducer(appReducer, initialState);
 
   const loginHandler = (localbrand) => {
+    console.log(localbrand);
     dispatchAppAction({ type: "LOGIN", localbrand: localbrand });
   };
 
