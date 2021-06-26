@@ -4,10 +4,8 @@ const login = (username, password) => {
   return defaultInstance.post("/localbrands/login", { username, password });
 };
 
-const getAuthInfo = (token) => {
-  return defaultInstance.get("/localbrands/me", {
-    headers: { Authorization: "Bearer " + token },
-  });
+const getAuthInfo = () => {
+  return defaultInstance.get("/localbrands/me");
 };
 
 export const localbrandsApis = {

@@ -1,21 +1,23 @@
-import React, { useEffect, Fragment, useState, useContext } from "react";
+import React, { Fragment, useState, useContext, useLayoutEffect } from "react";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Login.css";
 
 import { API_SUCCSES, JWT_TOKEN } from "../../constants";
 import { authService } from "../../service/auth";
 import AppContext from "../store/app-context";
+import { localbrandsApis } from "../../apis/localbrands";
+import Landing from "../Landing/Landing";
+import { useHistory } from "react-router-dom";
 
 const Login = (props) => {
   //set page title
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = "Login Page";
   }, []);
 
   const appCtx = useContext(AppContext);
-
+  const history = useHistory();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
@@ -42,21 +44,25 @@ const Login = (props) => {
       const res = await authService.login(username, password);
 
       if (res.status === API_SUCCSES) {
+        console.log(res.data.token);
         localStorage.setItem(JWT_TOKEN, res.data.token);
-        authUser(res.data.token);
-        props.history.push("/main-page");
+        await authUser(res.data.token);
       }
     } catch (err) {
       setLoginError(true);
     }
   };
 
-  const authUser = async (token) => {
+  const authUser = async () => {
     try {
-      const res = await authService.getAuthInfo(token);
+      const res = await localbrandsApis.getAuthInfo();
+      console.log(res.data);
       if (res.status === API_SUCCSES) {
+        console.log("GET USER SUCCESS");
+        props.onLogin();
         const localbrand = res.data;
         appCtx.login(localbrand);
+        history.push("/main-page");
       }
     } catch (err) {
       console.log("Auth Error");

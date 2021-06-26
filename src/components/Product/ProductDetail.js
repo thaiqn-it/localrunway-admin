@@ -6,11 +6,20 @@ import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import Select from "react-select";
 import { categoryApis } from "../../apis/category";
-// import TagInput from "../UI/TagInput";
 import AppContext from "../store/app-context";
+import { useHistory } from "react-router-dom";
 
 const ProductDetail = (props) => {
+  //check loggedId
+  const history = useHistory();
   const appCtx = useContext(AppContext);
+
+  useEffect(() => {
+    if (!appCtx.localbrand) {
+      history.push("/");
+    }
+  }, [appCtx.localbrand]);
+
   const [hashtags, setHashtags] = useState([]);
   const [existingProduct, setExistingProduct] = useState();
 

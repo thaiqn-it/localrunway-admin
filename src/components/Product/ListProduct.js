@@ -1,6 +1,6 @@
 import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useLayoutEffect, useContext } from "react";
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import AppContext from "../store/app-context";
@@ -10,7 +10,7 @@ import classes from "./ListProduct.module.css";
 
 export default function ListProduct(props) {
   //set page title
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = "Products Information";
   }, []);
 
@@ -37,9 +37,14 @@ export default function ListProduct(props) {
       title: "Action",
     },
   ];
-  // const { state, dispatch } = useContext(context);
   const appCtx = useContext(AppContext);
   const history = useHistory();
+
+  useEffect(() => {
+    if (!appCtx.localbrand) {
+      history.push("/");
+    }
+  }, [appCtx.localbrand]);
 
   const [productList, setProductList] = useState([]);
   const [page, setPage] = useState();
@@ -93,7 +98,7 @@ export default function ListProduct(props) {
           <thead>
             <tr>
               {columns.map((item, index) => {
-                return <th key={index}>{item.title}</th>;
+                return <th key={item._id}>{item.title}</th>;
               })}
             </tr>
           </thead>
