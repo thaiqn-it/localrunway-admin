@@ -33,7 +33,7 @@ function App() {
     if (localStorage.getItem(JWT_TOKEN)) {
       setIsLoggedIn(true);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, localStorage.getItem(JWT_TOKEN)]);
 
   return (
     <Router>

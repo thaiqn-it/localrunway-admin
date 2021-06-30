@@ -1,53 +1,76 @@
 import React, { useEffect, useState } from "react";
 
 const ProductDetailItem = (props) => {
+  const [name, setName] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [description, setDescription] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+
   const [price, setPrice] = useState(0);
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [quantity, setQuantity] = useState(0);
-  const [thumbnail, setThumbnail] = useState();
+  const [thumbnails, setThumbnails] = useState([]);
+  const [productId, setProductId] = useState("");
 
   const initData = () => {
     const product = props.product;
+    setName(props.name);
+    setType("DP");
+    setStatus(props.status);
+    setDescription(props.description);
+    setCategoryId(props.categoryId);
     setPrice(product.price);
     setSize(product.size);
     setColor(product.color);
     setQuantity(product.quantity);
-    setThumbnail(product.thumbnail);
+    setThumbnails(product.thumbnails);
+    setProductId(product._id);
   };
 
   useEffect(() => {
     initData();
-  }, [price, size, color, quantity, thumbnail]);
+  }, []);
 
-  const thumbnailFileInputHandler = (event) => {
-    console.log(event.target.files);
+  const getProduct = () => {
+    const product = {
+      id: productId,
+      name,
+      type,
+      status,
+      description,
+      categoryId,
+      size,
+      color,
+      quantity,
+      price,
+      thumbnails,
+    };
+    return product;
   };
-  //size quantity price thumbnail
+
+  useEffect(() => {
+    const product = getProduct();
+    props.onChangeInput(product);
+  }, [size, color, quantity, price, thumbnails]);
+
   return (
     <>
       <div className="form-row">
-        <div className="form-group col-md-4">
-          <label htmlFor="name">Price</label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Product Price"
-            value={price}
-            onChange={(event) => setPrice(parseInt(event.target.value))}
-          ></input>
-        </div>
-        <div className="form-group col-md-4">
+        <div className="form-group col-md-1">
           <label htmlFor="size">Size</label>
           <input
             type="text"
             className="form-control"
             placeholder="Product Size"
-            value={size}
-            onChange={(event) => setSize(event.target.value)}
+            defaultValue={size}
+            onChange={(event) => {
+              setSize(event.target.value);
+            }}
           ></input>
         </div>
-        <div className="form-group col-md-4">
+        <div className="form-group col-md-1">
           <label htmlFor="colorInput">Color</label>
           <input
             type="text"
@@ -57,32 +80,43 @@ const ProductDetailItem = (props) => {
             onChange={(event) => setColor(event.target.value)}
           ></input>
         </div>
-      </div>
-      <div className="form-row">
-        <div className="form-group col-md-4">
+        <div className="form-group col-md-1">
           <label htmlFor="formQuantity">Quantity</label>
           <input
             type="number"
             className="form-control"
             placeholder="Product Quantity"
             value={quantity}
-            onChange={(event) => setQuantity(parseInt(event.target.value))}
+            onChange={(event) => setQuantity(event.target.value)}
+          ></input>
+        </div>
+        <div className="form-group col-md-2">
+          <label htmlFor="name">Price</label>
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Product Price"
+            value={price}
+            onChange={(event) => setPrice(event.target.value)}
           ></input>
         </div>
       </div>
       <div className="form-group">
-        <label htmlFor="formThumbnail">Thumbnail</label>
+        <label htmlFor="formThumbnail">
+          Thumbnail For Size: {size} And Color: {color}
+        </label>
         <div className="form-row">
           <div className="form-group">
             <input
               type="file"
               accept="image/*"
               multiple={true}
-              onChange={thumbnailFileInputHandler}
+              onChange={(event) => setThumbnails(event.target.files)}
             />
           </div>
         </div>
       </div>
+      <hr />
     </>
   );
 };

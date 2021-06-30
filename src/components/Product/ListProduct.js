@@ -117,7 +117,7 @@ export default function ListProduct(props) {
                   <td>{item.name}</td>
                   <td>{item.status}</td>
                   <td>{item.price}</td>
-                  <td>{(item.ratingTotal / item.ratingCount).toFixed(2)}/4</td>
+                  <td>{item.rating}/4</td>
                   <td>{item.quantity}</td>
                   <td>
                     <button onClick={() => updateProduct(item._id)}>

@@ -13,6 +13,7 @@ import {
   PRODUCT_TYPE,
   STATUS_TYPE,
 } from "../../constants/control-default-value";
+import ProductDetailItem from "./ProductDetailItem";
 
 const ProductDetail = (props) => {
   const appCtx = useContext(AppContext);
@@ -22,6 +23,7 @@ const ProductDetail = (props) => {
   const [productId, setProductId] = useState(props.id);
   const [hashtags, setHashtags] = useState();
   const [existingProduct, setExistingProduct] = useState();
+  const [childrenProducts, setChildrenProducts] = useState([]);
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -50,7 +52,6 @@ const ProductDetail = (props) => {
       hashtags.push({ id: _id, name: name });
     });
     setProductHashtags(hashtags);
-    console.log(productHashtags);
   };
 
   const mediaFileInputHandler = (event) => {
@@ -80,10 +81,9 @@ const ProductDetail = (props) => {
     }
   };
 
-  const getExistingProduct = async (id) => {
+  const getExistingGeneralProduct = async (id) => {
     try {
       const res = await productApis.getProductById(id);
-      console.log(res.data);
       if (res.status === API_SUCCSES) {
         setExistingProduct(res.data.product);
         setName(res.data.product.name);
@@ -91,10 +91,27 @@ const ProductDetail = (props) => {
         setStatus(res.data.product.status);
         setDescription(res.data.product.description);
         setCategoryId(res.data.product.categoryId);
-        transformProductHashtags(res.data.product.hashtags);
-        console.log(res.data.product.hashtags);
         setMedia(res.data.product.media);
       }
+    } catch (err) {
+      //later
+    }
+  };
+
+  const getChildrenProducts = async (id) => {
+    try {
+      const res = await productApis.getChildrenProducts(id);
+      // console.log(res.data);
+      setChildrenProducts(res.data.products);
+    } catch (err) {}
+  };
+
+  const getProductHashtags = async (id) => {
+    try {
+      console.log("CHECK HASHTAGS");
+      const res = await productApis.getProductHashtags(id);
+      console.log(res.data);
+      transformProductHashtags(res.data.hashtags);
     } catch (err) {
       //later
     }
@@ -106,8 +123,6 @@ const ProductDetail = (props) => {
       if (res.status === API_SUCCSES) {
         setCategories(res.data.categories);
         const categories = res.data.categories;
-        console.log("CHECK CATE");
-        console.log(categories);
         transformCategories(categories);
       }
     } catch (err) {
@@ -117,11 +132,30 @@ const ProductDetail = (props) => {
 
   useEffect(() => {
     async function initData() {
-      await getExistingProduct(productId);
+      await getExistingGeneralProduct(productId);
       await getCategory(productId);
+      await getProductHashtags(productId);
+      await getChildrenProducts(productId);
     }
     initData();
   }, [productId]);
+
+  const getDetailProductInput = (productToUpdate) => {
+    const { size, color, quantity, price, thumbnails } = productToUpdate;
+    const index = childrenProducts.findIndex(
+      (product) => product._id === productToUpdate.id
+    );
+    const existingProduct = childrenProducts[index];
+    const updatedProduct = {
+      ...existingProduct,
+      size,
+      color,
+      quantity,
+      price,
+      thumbnailUrl: thumbnails,
+    };
+    console.log(updatedProduct);
+  };
 
   const submitHandler = async (ev) => {
     ev.preventDefault();
@@ -156,7 +190,7 @@ const ProductDetail = (props) => {
     <div className={classes.container}>
       <form>
         <div className="form-row">
-          <div className="form-group col-md-6">
+          <div className="form-group col-md-4">
             <label htmlFor="name">Name</label>
             <input
               type="text"
@@ -167,7 +201,7 @@ const ProductDetail = (props) => {
             />
           </div>
 
-          <div className="form-group col-md-3">
+          <div className="form-group col-md-2">
             <label htmlFor="inputType">Product Type</label>
             <Select
               options={productType}
@@ -176,7 +210,7 @@ const ProductDetail = (props) => {
               onChange={(productType) => setType(productType)}
             />
           </div>
-          <div className="form-group col-md-3">
+          <div className="form-group col-md-2">
             <label htmlFor="inputState">Product Status</label>
             <Select
               options={statusType}
@@ -186,14 +220,17 @@ const ProductDetail = (props) => {
             />
           </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="textareaDes">Description</label>
-          <textarea
-            onChange={(event) => setDescription(event.target.value)}
-            value={description}
-            className="form-control"
-            id="textareaDes"
-          ></textarea>
+
+        <div className="form-row">
+          <div className="form-group col-md-8">
+            <label htmlFor="textareaDes">Description</label>
+            <textarea
+              onChange={(event) => setDescription(event.target.value)}
+              value={description}
+              className="form-control"
+              id="textareaDes"
+            ></textarea>
+          </div>
         </div>
         <div className="form-row">
           <div className="form-group col-md-3">
@@ -208,32 +245,32 @@ const ProductDetail = (props) => {
         </div>
         <div className="form-group">
           <label htmlFor="inputCategory">Hashtags</label>
-          <div className="form-group">
-            <div className={classes.tagList}>
-              {productHashtags.map((tag) => (
-                <div
-                  className={classes.taglistItem}
-                  key={tag.id}
-                  onClick={() => deleteHashtagHandler(tag.id)}
-                >
-                  #{tag.name}
-                </div>
-              ))}
-            </div>
-            <div className="col-md-6">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Input Hashtags"
-                value={tagInput}
-                onChange={(event) => setTagInput(event.target.value)}
-                onKeyDown={(event) => addHashtagHandler(event)}
-              />
-            </div>
+          <div className={classes.tagList}>
+            {productHashtags.map((tag) => (
+              <div
+                className={classes.taglistItem}
+                key={tag.id}
+                onClick={() => deleteHashtagHandler(tag.id)}
+              >
+                #{tag.name}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group col-md-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Input Hashtags"
+              value={tagInput}
+              onChange={(event) => setTagInput(event.target.value)}
+              onKeyDown={(event) => addHashtagHandler(event)}
+            />
           </div>
         </div>
         <div className="form-group">
-          <label htmlFor="formThumbnail">Media</label>
+          <label htmlFor="formThumbnail">Product's Images</label>
           <div className="form-row">
             <div className="form-group">
               <input
@@ -245,6 +282,19 @@ const ProductDetail = (props) => {
             </div>
           </div>
         </div>
+        <div className="form-group">
+          {childrenProducts.map((product) => (
+            <ProductDetailItem
+              product={product}
+              onChangeInput={getDetailProductInput}
+              status={status}
+              name={name}
+              description={description}
+              categoryId={categoryId}
+            />
+          ))}
+        </div>
+
         <div className="form-group">
           <button
             onClick={submitHandler}
