@@ -3,9 +3,8 @@ import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Login.css";
 
-import { API_SUCCSES, JWT_TOKEN } from "../../constants";
+import { API_SUCCSES, JWT_TOKEN, LOCAL_BRAND_KEY } from "../../constants";
 import { authService } from "../../service/auth";
-import AppContext from "../store/app-context";
 import { localbrandsApis } from "../../apis/localbrands";
 import Landing from "../Landing/Landing";
 import { useHistory } from "react-router-dom";
@@ -16,7 +15,6 @@ const Login = (props) => {
     document.title = "Login Page";
   }, []);
 
-  const appCtx = useContext(AppContext);
   const history = useHistory();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,41 +29,25 @@ const Login = (props) => {
     setPassword(event.target.value);
   };
 
-  const onSubmitHandler = (event) => {
+  const onSubmitHandler = async (event) => {
     event.preventDefault();
     setLoginError(false);
     setAuthError(false);
-    // api goes here
-    login(username, password);
+    // login
+    await login(username, password);
   };
 
   const login = async (username, password) => {
     try {
       const res = await authService.login(username, password);
-
       if (res.status === API_SUCCSES) {
         console.log(res.data.token);
         localStorage.setItem(JWT_TOKEN, res.data.token);
-        await authUser(res.data.token);
+        props.onLogin();
+        history.push("/home");
       }
     } catch (err) {
       setLoginError(true);
-    }
-  };
-
-  const authUser = async () => {
-    try {
-      const res = await localbrandsApis.getAuthInfo();
-      console.log(res.data);
-      if (res.status === API_SUCCSES) {
-        console.log("GET USER SUCCESS");
-        props.onLogin();
-        const localbrand = res.data;
-        appCtx.login(localbrand);
-        history.push("/main-page");
-      }
-    } catch (err) {
-      console.log("Auth Error");
     }
   };
 

@@ -1,8 +1,12 @@
 import { defaultInstance } from ".";
 
-const getListProductByBrand = (brandId, page) => {
+const getListProductByBrand = (brandId, page, type) => {
   return defaultInstance.get("/products/", {
-    params: { brandIds: brandId, page: page },
+    params: {
+      brandIds: brandId,
+      page: page,
+      type: type,
+    },
   });
 };
 

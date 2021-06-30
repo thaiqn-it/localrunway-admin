@@ -8,83 +8,95 @@ import Select from "react-select";
 import { categoryApis } from "../../apis/category";
 import AppContext from "../store/app-context";
 import { useHistory } from "react-router-dom";
+import TagInput from "../UI/TagInput";
+import {
+  PRODUCT_TYPE,
+  STATUS_TYPE,
+} from "../../constants/control-default-value";
 
 const ProductDetail = (props) => {
-  //check loggedId
-  const history = useHistory();
   const appCtx = useContext(AppContext);
+  const productType = PRODUCT_TYPE;
+  const statusType = STATUS_TYPE;
 
-  useEffect(() => {
-    if (!appCtx.localbrand) {
-      history.push("/");
-    }
-  }, [appCtx.localbrand]);
-
-  const [hashtags, setHashtags] = useState([]);
+  const [productId, setProductId] = useState(props.id);
+  const [hashtags, setHashtags] = useState();
   const [existingProduct, setExistingProduct] = useState();
-
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [productHashtags, setProductHashtags] = useState([]);
-  //eslint-disable-next-line
   const [media, setMedia] = useState([]);
-  const [price, setPrice] = useState(0);
-  const [size, setSize] = useState("");
-  const [color, setColor] = useState("");
-  const [quantity, setQuantity] = useState(0);
-  const [thumbnail, setThumbnail] = useState("");
-
   const [categories, setCategories] = useState([]);
   const [categoriesType, setCategoriesType] = useState([]);
 
-  const productType = [
-    { value: "GP", label: "GP" },
-    { value: "DP", label: "DP" },
-  ];
-
-  const statusType = [
-    { value: "ACTIVE", label: "ACTIVE" },
-    { value: "INACTIVE", label: "INACTIVE" },
-  ];
+  const [tagInput, setTagInput] = useState("");
 
   const transformCategories = (categories) => {
-    // console.log("FROM TRANSFORM");
     let catesType = [];
     categories.map((cate) => {
       const { name, _id } = cate;
       catesType.push({ label: name, value: _id });
     });
-    // console.log(catesType);
     setCategoriesType(catesType);
   };
 
-  const fileInputHandler = (event) => {
+  const transformProductHashtags = (rawData) => {
+    let hashtags = [];
+    rawData.map((item) => {
+      const { _id, name } = item;
+      hashtags.push({ id: _id, name: name });
+    });
+    setProductHashtags(hashtags);
+    console.log(productHashtags);
+  };
+
+  const mediaFileInputHandler = (event) => {
     console.log(event.target.files);
   };
 
-  const hashtagInputHandler = (hashtags) => {
-    setHashtags(hashtags);
+  const deleteHashtagHandler = (id) => {
+    const tmp = [...productHashtags];
+    const index = tmp.findIndex((tag) => tag.id === id);
+    tmp.splice(index, 1);
+    setProductHashtags(tmp);
+  };
+
+  const addHashtagHandler = (event) => {
+    console.log(event.key);
+    console.log(tagInput);
+    if (
+      event.key === "Enter" ||
+      event.key === "Space" ||
+      event.keyCode === 13 ||
+      event.keyCode === 32
+    ) {
+      const tmp = [...productHashtags];
+      tmp.push({ id: Math.random(), name: tagInput });
+      setProductHashtags(tmp);
+      setTagInput("");
+    }
   };
 
   const getExistingProduct = async (id) => {
-    const res = await productApis.getProductById(id);
-    if (res.status === API_SUCCSES) {
-      setExistingProduct(res.data.product);
-      setName(res.data.product.name);
-      setType(res.data.product.type);
-      setStatus(res.data.product.status);
-      setDescription(res.data.product.description);
-      setCategoryId(res.data.product.categoryId);
-      setProductHashtags([...productHashtags, res.data.product.hashtags]);
-      setMedia(res.data.product.media);
-      setPrice(res.data.product.price);
-      setSize(res.data.product.size);
-      setColor(res.data.product.color);
-      setQuantity(res.data.product.quantity);
-      setThumbnail(res.data.product.thumbnailUrl);
+    try {
+      const res = await productApis.getProductById(id);
+      console.log(res.data);
+      if (res.status === API_SUCCSES) {
+        setExistingProduct(res.data.product);
+        setName(res.data.product.name);
+        setType(res.data.product.type);
+        setStatus(res.data.product.status);
+        setDescription(res.data.product.description);
+        setCategoryId(res.data.product.categoryId);
+        transformProductHashtags(res.data.product.hashtags);
+        console.log(res.data.product.hashtags);
+        setMedia(res.data.product.media);
+      }
+    } catch (err) {
+      //later
     }
   };
 
@@ -94,6 +106,8 @@ const ProductDetail = (props) => {
       if (res.status === API_SUCCSES) {
         setCategories(res.data.categories);
         const categories = res.data.categories;
+        console.log("CHECK CATE");
+        console.log(categories);
         transformCategories(categories);
       }
     } catch (err) {
@@ -102,38 +116,40 @@ const ProductDetail = (props) => {
   };
 
   useEffect(() => {
-    getExistingProduct(props.id);
-    getCategory(props.id);
-  }, []);
+    async function initData() {
+      await getExistingProduct(productId);
+      await getCategory(productId);
+    }
+    initData();
+  }, [productId]);
 
   const submitHandler = async (ev) => {
     ev.preventDefault();
     const id = existingProduct._id;
-    // console.log(appCtx.localbrand._id);
-    const product = {
-      name: name,
-      color: color,
-      size: size,
-      price: price,
-      quantity: quantity,
-      status: status,
-      type: type,
-      thumbnailUrl:
-        "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
-      media: [
-        "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
-      ],
-      description: description,
-      brandId: appCtx.localbrand._id,
-      categoryId: categoryId,
-    };
-    // console.log(product);
-    try {
-      const res = await productApis.updateProductById(id, product);
-      console.log(res.data);
-    } catch (error) {
-      console.log("ERROR", error.message);
-    }
+    // const product = {
+    //   name: name,
+    //   color: color,
+    //   size: size,
+    //   price: price,
+    //   quantity: quantity,
+    //   status: status,
+    //   type: type,
+    //   thumbnailUrl:
+    //     "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
+    //   media: [
+    //     "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
+    //   ],
+    //   description: description,
+    //   brandId: appCtx.localbrand._id,
+    //   categoryId: categoryId,
+    // };
+    // // console.log(product);
+    // try {
+    //   const res = await productApis.updateProductById(id, product);
+    //   console.log(res.data);
+    // } catch (error) {
+    //   console.log("ERROR", error.message);
+    // }
   };
 
   return (
@@ -193,10 +209,27 @@ const ProductDetail = (props) => {
         <div className="form-group">
           <label htmlFor="inputCategory">Hashtags</label>
           <div className="form-group">
-            {/* <TagInput
-              productHashtags={productHashtags}
-              onInput={hashtagInputHandler}
-            /> */}
+            <div className={classes.tagList}>
+              {productHashtags.map((tag) => (
+                <div
+                  className={classes.taglistItem}
+                  key={tag.id}
+                  onClick={() => deleteHashtagHandler(tag.id)}
+                >
+                  #{tag.name}
+                </div>
+              ))}
+            </div>
+            <div className="col-md-6">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Input Hashtags"
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={(event) => addHashtagHandler(event)}
+              />
+            </div>
           </div>
         </div>
         <div className="form-group">
@@ -207,64 +240,7 @@ const ProductDetail = (props) => {
                 type="file"
                 accept="image/*"
                 multiple={true}
-                onChange={fileInputHandler}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group col-md-4">
-            <label htmlFor="name">Price</label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Product Price"
-              value={price}
-              onChange={(event) => setPrice(parseInt(event.target.value))}
-            ></input>
-          </div>
-          <div className="form-group col-md-4">
-            <label htmlFor="size">Size</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Product Size"
-              value={size}
-              onChange={(event) => setSize(event.target.value)}
-            ></input>
-          </div>
-          <div className="form-group col-md-4">
-            <label htmlFor="colorInput">Color</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Product Color"
-              value={color}
-              onChange={(event) => setColor(event.target.value)}
-            ></input>
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group col-md-4">
-            <label htmlFor="formQuantity">Quantity</label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Product Quantity"
-              value={quantity}
-              onChange={(event) => setQuantity(parseInt(event.target.value))}
-            ></input>
-          </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="formThumbnail">Thumbnail</label>
-          <div className="form-row">
-            <div className="form-group">
-              <input
-                type="file"
-                accept="image/*"
-                multiple={true}
-                onChange={fileInputHandler}
+                onChange={mediaFileInputHandler}
               />
             </div>
           </div>

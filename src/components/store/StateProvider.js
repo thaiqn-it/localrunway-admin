@@ -33,6 +33,7 @@ const StateProvider = ({ children }) => {
   const loginHandler = (localbrand) => {
     console.log(localbrand);
     dispatchAppAction({ type: "LOGIN", localbrand: localbrand });
+    console.log(appState.localbrand);
   };
 
   const appContext = {

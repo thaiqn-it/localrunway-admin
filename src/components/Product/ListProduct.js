@@ -2,60 +2,37 @@ import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect, useLayoutEffect, useContext } from "react";
 import { productApis } from "../../apis/product";
-import { API_SUCCSES } from "../../constants";
+import { API_SUCCSES, JWT_TOKEN } from "../../constants";
 import AppContext from "../store/app-context";
 import { useHistory } from "react-router-dom";
 
 import classes from "./ListProduct.module.css";
+import { PRODUCT_LIST_HEADER } from "../../constants/control-default-value";
+import { localbrandsApis } from "../../apis/localbrands";
 
 export default function ListProduct(props) {
-  //set page title
   useLayoutEffect(() => {
     document.title = "Products Information";
   }, []);
 
-  const columns = [
-    {
-      title: "Thumbnail",
-    },
-    {
-      title: "Name",
-    },
-    {
-      title: "Status",
-    },
-    {
-      title: "Price",
-    },
-    {
-      title: "Feedback",
-    },
-    {
-      title: "Quantity",
-    },
-    {
-      title: "Action",
-    },
-  ];
-  const appCtx = useContext(AppContext);
+  const columns = PRODUCT_LIST_HEADER;
   const history = useHistory();
 
-  useEffect(() => {
-    if (!appCtx.localbrand) {
-      history.push("/");
-    }
-  }, [appCtx.localbrand]);
-
   const [productList, setProductList] = useState([]);
-  const [page, setPage] = useState();
-  const [brandId, setbrandId] = useState("");
+  const [page, setPage] = useState(1);
+  const [brandId, setBrandId] = useState();
   const [hasNext, setHasNext] = useState(true);
   const [havPrev, setHavPrev] = useState(true);
 
   const getData = async (brandId, page) => {
     if (brandId != null) {
       try {
-        const res = await productApis.getListProductByBrand(brandId, page);
+        const res = await productApis.getListProductByBrand(
+          brandId,
+          page,
+          "GP"
+        );
+        console.log(res.data);
         if (res.status === API_SUCCSES) {
           setProductList(res.data.products);
           setPage(res.data.page);
@@ -68,18 +45,40 @@ export default function ListProduct(props) {
     }
   };
 
+  const onInit = async () => {
+    try {
+      const brandResponse = await localbrandsApis.getAuthInfo();
+      setBrandId(brandResponse.data._id);
+
+      const brandIdFormatted = [];
+      brandIdFormatted.push(brandId);
+      getData(brandIdFormatted, page);
+    } catch (err) {
+      console.log("Auth Error");
+    }
+  };
+
   useEffect(() => {
-    let brandId = appCtx.localbrand === null ? "" : appCtx.localbrand._id;
-    const initialPage = 1;
-    setbrandId(brandId);
-    getData(brandId, initialPage);
-  }, []);
+    if (localStorage.getItem(JWT_TOKEN) === null) {
+      console.log("CHECK STORAGE");
+      history.push("/login");
+    }
+  }, [localStorage.getItem(JWT_TOKEN)]);
+
+  useEffect(() => {
+    async function init() {
+      await onInit();
+    }
+    init();
+  }, [brandId]);
 
   const deleteProduct = async (id) => {
     try {
       const res = await productApis.deleteProductById(id);
       if (res.status === API_SUCCSES) {
-        getData(brandId, page);
+        const brandIdFormatted = [];
+        brandIdFormatted.push(brandId);
+        getData(brandIdFormatted, page);
       }
     } catch (err) {
       //Exception Handler later
@@ -88,7 +87,8 @@ export default function ListProduct(props) {
 
   const updateProduct = (id) => {
     props.onGetProductId(id);
-    history.push("/main-page/productDetail");
+    console.log(id);
+    history.push("/home/productDetail");
   };
 
   return (
@@ -105,7 +105,7 @@ export default function ListProduct(props) {
           <tbody>
             {productList.map((item, index) => {
               return (
-                <tr id={item._id}>
+                <tr id={item._id} key={item._id}>
                   <td>
                     <img
                       src={item.thumbnailUrl}
@@ -117,7 +117,7 @@ export default function ListProduct(props) {
                   <td>{item.name}</td>
                   <td>{item.status}</td>
                   <td>{item.price}</td>
-                  <td>{item.feedback}</td>
+                  <td>{(item.ratingTotal / item.ratingCount).toFixed(2)}/4</td>
                   <td>{item.quantity}</td>
                   <td>
                     <button onClick={() => updateProduct(item._id)}>
