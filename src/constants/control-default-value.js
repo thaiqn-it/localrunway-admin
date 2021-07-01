@@ -31,3 +31,9 @@ export const PRODUCT_TYPE = [
   { value: "GP", label: "GP" },
   { value: "DP", label: "DP" },
 ];
+
+export const HASHTAG_STATUS = {
+  DEFAULT: "DEFAULT",
+  NEW: "NEW",
+  DELETED: "DELETED",
+};

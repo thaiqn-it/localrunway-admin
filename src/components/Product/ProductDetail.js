@@ -6,9 +6,6 @@ import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import Select from "react-select";
 import { categoryApis } from "../../apis/category";
-import AppContext from "../store/app-context";
-import { useHistory } from "react-router-dom";
-import TagInput from "../UI/TagInput";
 import {
   PRODUCT_TYPE,
   STATUS_TYPE,
@@ -16,13 +13,11 @@ import {
 import ProductDetailItem from "./ProductDetailItem";
 
 const ProductDetail = (props) => {
-  const appCtx = useContext(AppContext);
   const productType = PRODUCT_TYPE;
   const statusType = STATUS_TYPE;
 
   const [productId, setProductId] = useState(props.id);
-  const [hashtags, setHashtags] = useState();
-  const [existingProduct, setExistingProduct] = useState();
+  const [generalProduct, setExistingProduct] = useState();
   const [childrenProducts, setChildrenProducts] = useState([]);
   const [name, setName] = useState("");
   const [type, setType] = useState("");
@@ -56,6 +51,8 @@ const ProductDetail = (props) => {
 
   const mediaFileInputHandler = (event) => {
     console.log(event.target.files);
+    setMedia(event.target.files);
+    console.log(media);
   };
 
   const deleteHashtagHandler = (id) => {
@@ -66,8 +63,6 @@ const ProductDetail = (props) => {
   };
 
   const addHashtagHandler = (event) => {
-    console.log(event.key);
-    console.log(tagInput);
     if (
       event.key === "Enter" ||
       event.key === "Space" ||
@@ -75,7 +70,7 @@ const ProductDetail = (props) => {
       event.keyCode === 32
     ) {
       const tmp = [...productHashtags];
-      tmp.push({ id: Math.random(), name: tagInput });
+      tmp.push({ id: "", name: tagInput });
       setProductHashtags(tmp);
       setTagInput("");
     }
@@ -102,13 +97,40 @@ const ProductDetail = (props) => {
     try {
       const res = await productApis.getChildrenProducts(id);
       // console.log(res.data);
-      setChildrenProducts(res.data.products);
+      const nonFormatChildrenProductList = res.data.products;
+      const formattedProductList = [];
+      nonFormatChildrenProductList.map((product) => {
+        const {
+          _id,
+          color,
+          size,
+          price,
+          quantity,
+          type,
+          thumbnailUrl,
+          media,
+          brandId,
+        } = product;
+
+        formattedProductList.push({
+          _id,
+          color,
+          size,
+          price,
+          quantity,
+          type,
+          thumbnailUrl,
+          media,
+          brandId,
+          categoryId: categoryId,
+        });
+      });
+      setChildrenProducts(formattedProductList);
     } catch (err) {}
   };
 
   const getProductHashtags = async (id) => {
     try {
-      console.log("CHECK HASHTAGS");
       const res = await productApis.getProductHashtags(id);
       console.log(res.data);
       transformProductHashtags(res.data.hashtags);
@@ -141,49 +163,93 @@ const ProductDetail = (props) => {
   }, [productId]);
 
   const getDetailProductInput = (productToUpdate) => {
-    const { size, color, quantity, price, thumbnails } = productToUpdate;
-    const index = childrenProducts.findIndex(
-      (product) => product._id === productToUpdate.id
-    );
-    const existingProduct = childrenProducts[index];
-    const updatedProduct = {
-      ...existingProduct,
+    const {
       size,
       color,
       quantity,
       price,
-      thumbnailUrl: thumbnails,
+      thumbnailsItem,
+      name,
+      status,
+      description,
+      categoryId,
+    } = productToUpdate;
+
+    const index = childrenProducts.findIndex(
+      (product) => product._id === productToUpdate.id
+    );
+
+    const childrenProduct = childrenProducts[index];
+
+    const updatedchildrenProduct = {
+      ...childrenProduct,
+      name,
+      status,
+      description,
+      categoryId,
+      size,
+      color,
+      quantity,
+      price,
+      thumbnailUrl: thumbnailsItem,
     };
-    console.log(updatedProduct);
+
+    const tmp = [...childrenProducts];
+    tmp[index] = updatedchildrenProduct;
+    setChildrenProducts(tmp);
+  };
+
+  const updateChildrenProducts = () => {
+    const tmp = [...childrenProducts];
+    const updatedChildren = tmp.map((product) => {
+      product = {
+        ...product,
+        name: name,
+        status: status,
+        description: description,
+        categoryId: categoryId,
+      };
+      console.log("===============");
+      console.log(product);
+      console.log("===============");
+    });
+    setChildrenProducts(updatedChildren);
   };
 
   const submitHandler = async (ev) => {
     ev.preventDefault();
-    const id = existingProduct._id;
-    // const product = {
-    //   name: name,
-    //   color: color,
-    //   size: size,
-    //   price: price,
-    //   quantity: quantity,
-    //   status: status,
-    //   type: type,
-    //   thumbnailUrl:
-    //     "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
-    //   media: [
-    //     "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/Local-brand-streetwear-9-2-768x768.jpg?alt=media&token=8fb42b2b-c5b0-4987-b791-ee77352db1f5",
-    //   ],
-    //   description: description,
-    //   brandId: appCtx.localbrand._id,
-    //   categoryId: categoryId,
-    // };
-    // // console.log(product);
-    // try {
-    //   const res = await productApis.updateProductById(id, product);
-    //   console.log(res.data);
-    // } catch (error) {
-    //   console.log("ERROR", error.message);
-    // }
+
+    const id = generalProduct._id;
+
+    const updatedGeneralProduct = {
+      id: id,
+      name: name,
+      color: generalProduct.color,
+      size: generalProduct.size,
+      price: generalProduct.price,
+      quanity: generalProduct.quantity,
+      status: status,
+      type: type,
+      thumbnailUrl: generalProduct.thumbnailUrl,
+      media: media,
+      description: description,
+      brandId: generalProduct.brandId,
+      categoryId: categoryId,
+      hashtags: productHashtags,
+      categoryId: categoryId,
+    };
+    updateChildrenProducts();
+
+    console.log(updatedGeneralProduct);
+    console.log(childrenProducts);
+
+    try {
+      // listProductToUpdate.map((product) => console.log(product));
+      // const res = await productApis.updateProductById(id, product);
+      // console.log(res.data);
+    } catch (error) {
+      // console.log("ERROR", error.message);
+    }
   };
 
   return (

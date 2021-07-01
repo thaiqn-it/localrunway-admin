@@ -11,7 +11,7 @@ const ProductDetailItem = (props) => {
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [quantity, setQuantity] = useState(0);
-  const [thumbnails, setThumbnails] = useState([]);
+  const [thumbnailsItem, setThumbnailsItem] = useState([]);
   const [productId, setProductId] = useState("");
 
   const initData = () => {
@@ -25,7 +25,7 @@ const ProductDetailItem = (props) => {
     setSize(product.size);
     setColor(product.color);
     setQuantity(product.quantity);
-    setThumbnails(product.thumbnails);
+    setThumbnailsItem(product.thumbnailUrl);
     setProductId(product._id);
   };
 
@@ -45,7 +45,7 @@ const ProductDetailItem = (props) => {
       color,
       quantity,
       price,
-      thumbnails,
+      thumbnailsItem,
     };
     return product;
   };
@@ -53,10 +53,11 @@ const ProductDetailItem = (props) => {
   useEffect(() => {
     const product = getProduct();
     props.onChangeInput(product);
-  }, [size, color, quantity, price, thumbnails]);
+  }, [size, color, quantity, price]);
 
   return (
     <>
+      <hr />
       <div className="form-row">
         <div className="form-group col-md-1">
           <label htmlFor="size">Size</label>
@@ -102,21 +103,32 @@ const ProductDetailItem = (props) => {
         </div>
       </div>
       <div className="form-group">
-        <label htmlFor="formThumbnail">
-          Thumbnail For Size: {size} And Color: {color}
-        </label>
+        <div className="form-row">
+          <img
+            src={thumbnailsItem}
+            alt="Girl in a jacket"
+            width="100"
+            height="100"
+          />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="formThumbnail">
+            Thumbnail For Size: {size} And Color: {color}
+          </label>
+        </div>
+
         <div className="form-row">
           <div className="form-group">
             <input
               type="file"
               accept="image/*"
               multiple={true}
-              onChange={(event) => setThumbnails(event.target.files)}
+              onChange={(event) => setThumbnailsItem(event.target.files)}
             />
           </div>
         </div>
       </div>
-      <hr />
     </>
   );
 };
