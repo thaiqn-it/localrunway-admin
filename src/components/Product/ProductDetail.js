@@ -5,12 +5,14 @@ import "../../../node_modules/jquery/dist/jquery.min.js";
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import Select from "react-select";
+import firebase from "../firebase/firebase";
 import { categoryApis } from "../../apis/category";
 import {
   PRODUCT_TYPE,
   STATUS_TYPE,
 } from "../../constants/control-default-value";
 import ProductDetailItem from "./ProductDetailItem";
+import { hashtagApis } from "../../apis/hashtag";
 
 const ProductDetail = (props) => {
   const productType = PRODUCT_TYPE;
@@ -26,10 +28,12 @@ const ProductDetail = (props) => {
   const [categoryId, setCategoryId] = useState("");
   const [productHashtags, setProductHashtags] = useState([]);
   const [media, setMedia] = useState([]);
+  const [mediaUrl, setMediaUrl] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesType, setCategoriesType] = useState([]);
 
   const [tagInput, setTagInput] = useState("");
+  const [progress, setProgress] = useState(0);
 
   const transformCategories = (categories) => {
     let catesType = [];
@@ -50,19 +54,68 @@ const ProductDetail = (props) => {
   };
 
   const mediaFileInputHandler = (event) => {
-    console.log(event.target.files);
     setMedia(event.target.files);
+  };
+
+  const FirebaseUrlHandler = () => {
     console.log(media);
+    const temp = [...mediaUrl];
+    const files = [...media];
+    for (const file of files) {
+      console.log("check ..." + file);
+      try {
+        let fileToUp = file;
+        const storage = firebase.storage();
+        const storageRef = storage.ref();
+        const uploadTask = storageRef
+          .child("media/" + fileToUp.name)
+          .put(fileToUp);
+        console.log("check");
+        uploadTask.on(
+          firebase.storage.TaskEvent.STATE_CHANGED,
+          (snapshot) => {
+            //progress check tien do upload file
+            //thay bang bien true hay false gi do de check da up dc file cung duoc
+            const progress =
+              Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setProgress(progress);
+          },
+          (error) => {
+            throw error;
+          },
+          () => {
+            uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+              console.log(url);
+              temp.push({ mediaUrl: url });
+              setMediaUrl(temp);
+            });
+          }
+        );
+      } catch (err) {
+        console.log(err.response);
+      }
+    }
   };
 
-  const deleteHashtagHandler = (id) => {
-    const tmp = [...productHashtags];
-    const index = tmp.findIndex((tag) => tag.id === id);
-    tmp.splice(index, 1);
-    setProductHashtags(tmp);
+  const deleteHashtagHandler = async (id) => {
+    try {
+      //delete productHashtag
+      const generalProductId = generalProduct._id;
+      console.log(generalProductId);
+      console.log(id);
+      const res = await productApis.deleteProductHashtag(generalProductId, id);
+
+      // updateUI;
+      const tmp = [...productHashtags];
+      const index = tmp.findIndex((tag) => tag.id === id);
+      tmp.splice(index, 1);
+      setProductHashtags(tmp);
+    } catch (err) {
+      console.log(err.response.data.errorParams);
+    }
   };
 
-  const addHashtagHandler = (event) => {
+  const addHashtagHandler = async (event) => {
     if (
       event.key === "Enter" ||
       event.key === "Space" ||
@@ -70,9 +123,26 @@ const ProductDetail = (props) => {
       event.keyCode === 32
     ) {
       const tmp = [...productHashtags];
-      tmp.push({ id: "", name: tagInput });
-      setProductHashtags(tmp);
-      setTagInput("");
+      try {
+        //add new hashtag
+        const resHashtag = await hashtagApis.addHashtag(tagInput);
+        //add new hashtag into product
+        const { _id } = resHashtag.data.hashtag;
+        const generalProductId = generalProduct._id;
+
+        const resProductHashtag = await productApis.addProductHashtag(
+          generalProductId,
+          _id
+        );
+
+        //reset UI
+        tmp.push({ id: _id, name: tagInput });
+        console.log(tmp);
+        setProductHashtags(tmp);
+        setTagInput("");
+      } catch (err) {
+        console.log(err.response.data.errorParams);
+      }
     }
   };
 
@@ -201,6 +271,7 @@ const ProductDetail = (props) => {
 
   const submitHandler = async (ev) => {
     ev.preventDefault();
+
     const id = generalProduct._id;
     const updatedGeneralProduct = {
       id: id,
@@ -212,7 +283,7 @@ const ProductDetail = (props) => {
       status: status,
       type: type,
       thumbnailUrl: generalProduct.thumbnailUrl,
-      media: media,
+      media: mediaUrl,
       description: description,
       brandId: generalProduct.brandId,
       categoryId: categoryId,
@@ -237,10 +308,15 @@ const ProductDetail = (props) => {
 
     const productToUpdate = [updatedGeneralProduct, ...tmpChildren];
     try {
-      productToUpdate.map((product) => {
-        // let res = await productApis.updateProductById(product.id, product);
-        console.log(product);
-      });
+      let res = await productApis.updateProductById(
+        updatedGeneralProduct.id,
+        updatedGeneralProduct
+      );
+      console.log(res.data);
+      // productToUpdate.map((product) => {
+      //   // let res = await productApis.updateProductById(product.id, product);
+      //   console.log(product);
+      // });
     } catch (error) {
       console.log(error.response.data.errorParams);
     }
@@ -341,6 +417,13 @@ const ProductDetail = (props) => {
               />
             </div>
           </div>
+          <button
+            onClick={FirebaseUrlHandler}
+            type="button"
+            class="btn btn-primary"
+          >
+            Upload
+          </button>
         </div>
         <div className="form-group">
           {childrenProducts.map((product) => (
