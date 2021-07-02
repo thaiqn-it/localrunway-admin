@@ -58,7 +58,7 @@ const ProductDetailItem = (props) => {
   return (
     <>
       <hr />
-      <div className="form-row">
+      <div className="form-row" key={productId}>
         <div className="form-group col-md-1">
           <label htmlFor="size">Size</label>
           <input

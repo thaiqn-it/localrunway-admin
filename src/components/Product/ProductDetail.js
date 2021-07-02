@@ -199,35 +199,16 @@ const ProductDetail = (props) => {
     setChildrenProducts(tmp);
   };
 
-  const updateChildrenProducts = () => {
-    const tmp = [...childrenProducts];
-    const updatedChildren = tmp.map((product) => {
-      product = {
-        ...product,
-        name: name,
-        status: status,
-        description: description,
-        categoryId: categoryId,
-      };
-      console.log("===============");
-      console.log(product);
-      console.log("===============");
-    });
-    setChildrenProducts(updatedChildren);
-  };
-
   const submitHandler = async (ev) => {
     ev.preventDefault();
-
     const id = generalProduct._id;
-
     const updatedGeneralProduct = {
       id: id,
       name: name,
       color: generalProduct.color,
       size: generalProduct.size,
       price: generalProduct.price,
-      quanity: generalProduct.quantity,
+      quantity: generalProduct.quantity,
       status: status,
       type: type,
       thumbnailUrl: generalProduct.thumbnailUrl,
@@ -238,17 +219,30 @@ const ProductDetail = (props) => {
       hashtags: productHashtags,
       categoryId: categoryId,
     };
-    updateChildrenProducts();
 
     console.log(updatedGeneralProduct);
-    console.log(childrenProducts);
 
+    const tmpChildren = [];
+    childrenProducts.map((prod) => {
+      const product = {
+        ...prod,
+        name: updatedGeneralProduct.name,
+        status: updatedGeneralProduct.status,
+        description: updatedGeneralProduct.description,
+        categoryId: updatedGeneralProduct.categoryId,
+        media: media,
+      };
+      tmpChildren.push(product);
+    });
+
+    const productToUpdate = [updatedGeneralProduct, ...tmpChildren];
     try {
-      // listProductToUpdate.map((product) => console.log(product));
-      // const res = await productApis.updateProductById(id, product);
-      // console.log(res.data);
+      productToUpdate.map((product) => {
+        // let res = await productApis.updateProductById(product.id, product);
+        console.log(product);
+      });
     } catch (error) {
-      // console.log("ERROR", error.message);
+      console.log(error.response.data.errorParams);
     }
   };
 
