@@ -9,4 +9,4 @@ export const getJWToken = () => {
   return (JWT_TOKEN_VALUE = localStorage.getItem(JWT_TOKEN));
 };
 
-export { JWT_TOKEN, API_SUCCSES, LOCAL_BRAND_KEY };
+export { JWT_TOKEN, API_SUCCSES, LOCAL_BRAND_KEY, API_BAD_REQUEST };

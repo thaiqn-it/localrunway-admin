@@ -4,10 +4,10 @@ const getAllHashtags = () => {
   return defaultInstance.get("/hashtags");
 };
 
-const postHashtag = (name) => {
-  return defaultInstance.post("/hashtags", { name });
+const addHashtag = (name) => {
+  return defaultInstance.post("/hashtags", { name: name });
 };
-export const hashtagsApis = {
+export const hashtagApis = {
   getAllHashtags,
-  postHashtag,
+  postHashtag: addHashtag,
 };

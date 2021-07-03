@@ -6,7 +6,7 @@ import { API_BAD_REQUEST, API_SUCCSES } from "../../constants";
 import AppContext from "../store/app-context";
 
 import classes from "./CreateProduct.module.css";
-import { hashtagsApis } from "../../apis/hashtag";
+import { hashtagApis } from "../../apis/hashtag";
 import { productHashtagApi } from "../../apis/productHastag";
 export default function CreateProductHashtag({ productId }) {
   const submitError = {
@@ -32,7 +32,7 @@ export default function CreateProductHashtag({ productId }) {
   };
   const getHashtagSuggetionlist = async () => {
     try {
-      const res = await hashtagsApis.getAllHashtags();
+      const res = await hashtagApis.getAllHashtags();
       if (res.status === API_SUCCSES) {
         const hashtaglist = res.data.hashtags;
         hashtaglist.map((item, index) => (item.index = index));
@@ -76,7 +76,7 @@ export default function CreateProductHashtag({ productId }) {
 
   const createHashtag = async (hashtagName) => {
     try {
-      const res = await hashtagsApis.postHashtag(hashtagName);
+      const res = await hashtagApis.postHashtag(hashtagName);
       if (res === API_SUCCSES) {
         return res.data.hashtag;
       }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Switch, Route, useRouteMatch, Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { JWT_TOKEN } from "../../constants";
+import CreateProduct from "../Product/CreateProduct";
 import ListProduct from "../Product/ListProduct";
 import ProductDetail from "../Product/ProductDetail";
 import "./Landing.css";
@@ -34,6 +35,9 @@ const Landing = (props) => {
           <Link className="nav-link" to={`${url}/products`}>
             List Products
           </Link>
+          <Link className="nav-link" to={`${url}/create`}>
+            Create Product
+          </Link>
         </div>
       </div>
 
@@ -52,7 +56,10 @@ const Landing = (props) => {
             path={`${path}/productDetail`}
             component={() => <ProductDetail id={productId} />}
           />
-          <Route path={"/main-page/create"} component={CreateProduct}></Route>
+          <Route
+            path={`${path}/create`}
+            component={() => <CreateProduct />}
+          ></Route>
         </Switch>
       </div>
     </div>
