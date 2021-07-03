@@ -23,3 +23,12 @@
 .taglistItem:hover {
   background-color: #a5a0a0;
 }
+
+.image_slide {
+  display: flex;
+  flex-direction: row;
+  margin-right: 10px;
+  margin-bottom: 20px;
+  width: 120px;
+  height: 130px;
+}

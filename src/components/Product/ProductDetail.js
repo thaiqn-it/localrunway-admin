@@ -34,7 +34,6 @@ const ProductDetail = (props) => {
   const [categoriesType, setCategoriesType] = useState([]);
 
   const [tagInput, setTagInput] = useState("");
-  const [progress, setProgress] = useState(0);
 
   const transformCategories = (categories) => {
     let catesType = [];
@@ -55,6 +54,7 @@ const ProductDetail = (props) => {
   };
 
   const mediaFileInputHandler = async (event) => {
+    setMedia(event.target.files);
     const files = event.target.files;
 
     for (const file of files) {
@@ -62,7 +62,10 @@ const ProductDetail = (props) => {
       formData.append("file", file);
       try {
         const res = await mediaApi.uploadFie(formData);
-        console.log(res);
+        const { publicUrl } = res.data;
+        const tmp = [...mediaUrl];
+        tmp.push({ mediaUrl: publicUrl });
+        setMediaUrl(tmp);
       } catch (err) {
         console.log(err.response.data);
       }
@@ -73,8 +76,6 @@ const ProductDetail = (props) => {
     try {
       //delete productHashtag
       const generalProductId = generalProduct._id;
-      console.log(generalProductId);
-      console.log(id);
       const res = await productApis.deleteProductHashtag(generalProductId, id);
 
       // updateUI;
@@ -109,7 +110,6 @@ const ProductDetail = (props) => {
 
         //reset UI
         tmp.push({ id: _id, name: tagInput });
-        console.log(tmp);
         setProductHashtags(tmp);
         setTagInput("");
       } catch (err) {
@@ -138,7 +138,6 @@ const ProductDetail = (props) => {
   const getChildrenProducts = async (id) => {
     try {
       const res = await productApis.getChildrenProducts(id);
-      // console.log(res.data);
       const nonFormatChildrenProductList = res.data.products;
       const formattedProductList = [];
       nonFormatChildrenProductList.map((product) => {
@@ -174,7 +173,6 @@ const ProductDetail = (props) => {
   const getProductHashtags = async (id) => {
     try {
       const res = await productApis.getProductHashtags(id);
-      console.log(res.data);
       transformProductHashtags(res.data.hashtags);
     } catch (err) {
       //later
@@ -210,7 +208,7 @@ const ProductDetail = (props) => {
       color,
       quantity,
       price,
-      thumbnailsItem,
+      thumbnailUrl,
       name,
       status,
       description,
@@ -233,7 +231,7 @@ const ProductDetail = (props) => {
       color,
       quantity,
       price,
-      thumbnailUrl: thumbnailsItem,
+      thumbnailUrl: thumbnailUrl,
     };
 
     const tmp = [...childrenProducts];
@@ -244,9 +242,10 @@ const ProductDetail = (props) => {
   const submitHandler = async (ev) => {
     ev.preventDefault();
 
+    //update newest state for GP
     const id = generalProduct._id;
     const updatedGeneralProduct = {
-      id: id,
+      _id: id,
       name: name,
       color: generalProduct.color,
       size: generalProduct.size,
@@ -263,8 +262,7 @@ const ProductDetail = (props) => {
       categoryId: categoryId,
     };
 
-    console.log(updatedGeneralProduct);
-
+    //update children to newsest state
     const tmpChildren = [];
     childrenProducts.map((prod) => {
       const product = {
@@ -275,15 +273,17 @@ const ProductDetail = (props) => {
         categoryId: updatedGeneralProduct.categoryId,
         media: updatedGeneralProduct.media,
       };
+
       tmpChildren.push(product);
     });
 
-    const productToUpdate = [updatedGeneralProduct, ...tmpChildren];
+    //call API
+    const productsToUpdate = [updatedGeneralProduct, ...tmpChildren];
     try {
-      productToUpdate.map(async (product) => {
-        let res = await productApis.updateProductById(product.id, product);
-        console.log(res.data);
-      });
+      for (let product of productsToUpdate) {
+        console.log(product);
+        const res = await productApis.updateProductById(product._id, product);
+      }
     } catch (error) {
       console.log(error.response.data.errorParams);
     }
@@ -373,7 +373,16 @@ const ProductDetail = (props) => {
           </div>
         </div>
         <div className="form-group">
-          <label htmlFor="formThumbnail">Product's Images</label>
+          <label htmlFor="formThumbnail">Product's Media Images</label>
+          <div className="form-row">
+            {mediaUrl.map((url) => (
+              <img
+                className={classes.image_slide}
+                src={url.mediaUrl}
+                alt="media of image"
+              />
+            ))}
+          </div>
           <div className="form-row">
             <div className="form-group">
               <input

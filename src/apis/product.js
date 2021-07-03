@@ -31,7 +31,7 @@ const getProductHashtags = (id) => {
 };
 
 const updateProductById = (id, product) => {
-  return defaultInstance.put(`/products/${id}`, product);
+  return defaultInstance.put(`/products/${id}/`, product);
 };
 
 const addProductHashtag = (id, hashtagId) => {

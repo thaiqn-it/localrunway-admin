@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { mediaApi } from "../../apis/media";
 import firebase from "../firebase/firebase";
+import classes from "./ProductDetailItem.module.css";
 
 const ProductDetailItem = (props) => {
   const [name, setName] = useState("");
@@ -12,10 +14,8 @@ const ProductDetailItem = (props) => {
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [quantity, setQuantity] = useState(0);
-  const [thumbnailItem, setThumbnailItem] = useState();
-  const [thumbnailsItemUrl, setThumbnailsItemUrl] = useState("");
+  const [thumbnailItem, setThumbnailItem] = useState("");
   const [productId, setProductId] = useState("");
-  const [progress, setProgress] = useState(0);
 
   const initData = () => {
     const product = props.product;
@@ -38,7 +38,7 @@ const ProductDetailItem = (props) => {
 
   const getProduct = () => {
     const product = {
-      id: productId,
+      _id: productId,
       name,
       type,
       status,
@@ -48,52 +48,41 @@ const ProductDetailItem = (props) => {
       color,
       quantity,
       price,
-      thumbnailUrl: thumbnailsItemUrl,
+      thumbnailUrl: thumbnailItem,
     };
-    console.log(product);
     return product;
-  };
-  const FirebaseUrlHandler = () => {
-    let fileToUp = thumbnailItem;
-    console.log("check", fileToUp);
-    try {
-      const storage = firebase.storage();
-      const storageRef = storage.ref();
-      const uploadTask = storageRef
-        .child("media/" + fileToUp.name)
-        .put(fileToUp);
-      console.log("check");
-      uploadTask.on(
-        firebase.storage.TaskEvent.STATE_CHANGED,
-        (snapshot) => {
-          const progress =
-            Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(progress);
-        },
-        (error) => {
-          throw error;
-        },
-        () => {
-          uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-            console.log(url);
-            setThumbnailsItemUrl(url);
-            setThumbnailItem(url);
-          });
-        }
-      );
-    } catch (err) {
-      console.log(err.response);
-    }
   };
 
   useEffect(() => {
     const product = getProduct();
     props.onChangeInput(product);
-  }, [size, color, quantity, price, thumbnailsItemUrl]);
+  }, [size, color, quantity, price, thumbnailItem]);
+
+  const thumbnailInputHandler = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await mediaApi.uploadFie(formData);
+      const { publicUrl } = res.data;
+      console.log(publicUrl);
+      setThumbnailItem(publicUrl);
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  };
 
   return (
     <>
       <hr />
+      <div className="form-group">
+        <img
+          className={classes.image}
+          src={thumbnailItem}
+          alt="thumbnail for this child product"
+          width="100"
+          height="100"
+        />
+      </div>
       <div className="form-row" key={productId}>
         <div className="form-group col-md-1">
           <label htmlFor="size">Size</label>
@@ -140,15 +129,6 @@ const ProductDetailItem = (props) => {
       </div>
       <div className="form-group">
         <div className="form-row">
-          <img
-            src={thumbnailItem}
-            alt="Girl in a jacket"
-            width="100"
-            height="100"
-          />
-        </div>
-
-        <div className="form-row">
           <label htmlFor="formThumbnail">
             Thumbnail For Size: {size} And Color: {color}
           </label>
@@ -159,16 +139,9 @@ const ProductDetailItem = (props) => {
             <input
               type="file"
               accept="image/*"
-              onChange={(event) => setThumbnailItem(event.target.files[0])}
+              onChange={(event) => thumbnailInputHandler(event.target.files[0])}
             />
           </div>
-          <button
-            onClick={FirebaseUrlHandler}
-            type="button"
-            className="btn btn-primary"
-          >
-            Upload
-          </button>
         </div>
       </div>
     </>
