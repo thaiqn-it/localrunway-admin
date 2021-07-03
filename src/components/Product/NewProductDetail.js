@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 
-export default function NewProductDetail({ item, index, handleDetail }) {
+export default function NewProductDetail({
+  item,
+  index,
+  handleDetail,
+  handleDetailDelete,
+  generalProduct,
+}) {
   const [size, setSize] = useState([]);
   const [quantity, setQuantity] = useState(0);
   const [price, setPrice] = useState(0);
   const [thumbnail, setThumbnail] = useState("");
   const error = false;
-
+  const productStatus = { active: "ACTIVE", inactive: "INACTIVE" };
   const sizeChangeHandle = (event) => {
     setSize(event.target.value);
   };
@@ -24,18 +30,31 @@ export default function NewProductDetail({ item, index, handleDetail }) {
   };
   const handleSubmit = (event) => {
     const productDetail = {
-      size,
-      quantity,
-      price,
-      thumbnail,
+      name: generalProduct.name,
+      color: generalProduct.color,
+      size: size,
+      price: price,
+      quantity: quantity,
+      status: productStatus.active,
+      type: "DP",
+      description: generalProduct.description,
+      thumbnailUrl:
+        "https://firebasestorage.googleapis.com/v0/b/image-e6757.appspot.com/o/jacket-ontop-local-brand-viet-nam.2jpg-800x800.jpg?alt=media&token=4f02c71e-1c7a-45d0-abc9-c5885ebb055a",
+      media: generalProduct.media,
+      brandId: generalProduct.brandId,
+      categoryId: generalProduct.categoryId,
     };
-    handleDetail(productDetail);
+
+    handleDetail(productDetail, index);
+  };
+  const handleDelete = () => {
+    handleDetailDelete(index);
   };
 
   return (
-    <tr key={index}>
-      <td>{item.text}</td>
-      <td>
+    <>
+      <div className="form-group has-validation">
+        <label for="productName">Product Size</label>
         <input
           type="text"
           className={
@@ -46,9 +65,11 @@ export default function NewProductDetail({ item, index, handleDetail }) {
           id="size"
           onChange={sizeChangeHandle}
           placeholder=""
+          defaultValue={`${item.size}`}
         />
-      </td>
-      <td>
+      </div>
+      <div className="form-group has-validation">
+        <label for="productName">Product Quantity</label>
         <input
           type="text"
           className={
@@ -57,9 +78,11 @@ export default function NewProductDetail({ item, index, handleDetail }) {
           id="quantity"
           onChange={quantityChangeHandle}
           placeholder=""
+          defaultValue={`${item.quantity}`}
         />
-      </td>
-      <td>
+      </div>
+      <div className="form-group has-validation">
+        <label for="productName">Product Price</label>
         <input
           type="text"
           className={
@@ -68,21 +91,26 @@ export default function NewProductDetail({ item, index, handleDetail }) {
           id="price"
           onChange={priceChangeHandle}
           placeholder=""
+          defaultValue={`${item.price}`}
         />
-      </td>
-      <td>
+      </div>
+      <div className="form-group has-validation">
+        <label for="productName">Product Thumbnail</label>
         <input
           type="file"
           accept="image/*"
           multiple={true}
           onChange={thumbnailChangeHandle}
+          defaultValue={item.thumbnail}
         />
-      </td>
-      <td>
-        <button type="submit" class="btn btn-primary" onClick={handleSubmit}>
-          Submit
-        </button>
-      </td>
-    </tr>
+      </div>
+
+      <button type="submit" class="btn btn-primary" onClick={handleDelete}>
+        Delete
+      </button>
+      <button type="submit" class="btn btn-primary" onClick={handleSubmit}>
+        Submit
+      </button>
+    </>
   );
 }
