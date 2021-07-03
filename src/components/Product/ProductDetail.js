@@ -34,6 +34,8 @@ const ProductDetail = (props) => {
   const [categoriesType, setCategoriesType] = useState([]);
 
   const [tagInput, setTagInput] = useState("");
+  const [serverErros, setServerErrors] = useState();
+  const [errors, setErrors] = useState();
 
   const transformCategories = (categories) => {
     let catesType = [];
@@ -67,7 +69,7 @@ const ProductDetail = (props) => {
         tmp.push({ mediaUrl: publicUrl });
         setMediaUrl(tmp);
       } catch (err) {
-        console.log(err.response.data);
+        setErrors(err.response.data.errorParams);
       }
     }
   };
@@ -113,7 +115,7 @@ const ProductDetail = (props) => {
         setProductHashtags(tmp);
         setTagInput("");
       } catch (err) {
-        console.log(err.response.data.errorParams);
+        setErrors(err.response.data.errorParams);
       }
     }
   };
@@ -131,7 +133,8 @@ const ProductDetail = (props) => {
         setMedia(res.data.product.media);
       }
     } catch (err) {
-      //later
+      //redirect?
+      setErrors(err.response.data.errorParams);
     }
   };
 
@@ -167,7 +170,9 @@ const ProductDetail = (props) => {
         });
       });
       setChildrenProducts(formattedProductList);
-    } catch (err) {}
+    } catch (err) {
+      setErrors(err.response.data.errorParams);
+    }
   };
 
   const getProductHashtags = async (id) => {
@@ -175,7 +180,7 @@ const ProductDetail = (props) => {
       const res = await productApis.getProductHashtags(id);
       transformProductHashtags(res.data.hashtags);
     } catch (err) {
-      //later
+      setErrors(err.response.data.errorParams);
     }
   };
 
@@ -188,7 +193,7 @@ const ProductDetail = (props) => {
         transformCategories(categories);
       }
     } catch (err) {
-      //later
+      setErrors(err.response.data.errorParams);
     }
   };
 
@@ -204,6 +209,7 @@ const ProductDetail = (props) => {
 
   const getDetailProductInput = (productToUpdate) => {
     const {
+      _id,
       size,
       color,
       quantity,
@@ -216,27 +222,53 @@ const ProductDetail = (props) => {
     } = productToUpdate;
 
     const index = childrenProducts.findIndex(
-      (product) => product._id === productToUpdate.id
+      (product) => product._id === productToUpdate._id
     );
 
-    const childrenProduct = childrenProducts[index];
+    if (index >= 0) {
+      const childrenProduct = childrenProducts[index];
 
-    const updatedchildrenProduct = {
-      ...childrenProduct,
-      name,
-      status,
-      description,
-      categoryId,
-      size,
-      color,
-      quantity,
-      price,
-      thumbnailUrl: thumbnailUrl,
-    };
+      const updatedchildrenProduct = {
+        ...childrenProduct,
+        name,
+        status,
+        description,
+        categoryId,
+        size,
+        color,
+        quantity,
+        price,
+        thumbnailUrl: thumbnailUrl,
+      };
 
-    const tmp = [...childrenProducts];
-    tmp[index] = updatedchildrenProduct;
-    setChildrenProducts(tmp);
+      const tmp = [...childrenProducts];
+      tmp[index] = updatedchildrenProduct;
+
+      console.log("yyy");
+      console.log(updatedchildrenProduct);
+      setChildrenProducts(tmp);
+      console.log("xxx");
+      console.log(childrenProducts);
+    }
+  };
+
+  const updateChildrenProduct = (updatedGeneralProduct) => {
+    const updatedChildren = [];
+    const tmpChildren = [...childrenProducts];
+    tmpChildren.map((prod) => {
+      const product = {
+        ...prod,
+        name: updatedGeneralProduct.name,
+        status: updatedGeneralProduct.status,
+        description: updatedGeneralProduct.description,
+        categoryId: updatedGeneralProduct.categoryId,
+        media: updatedGeneralProduct.media,
+      };
+      console.log(product);
+      updatedChildren.push(product);
+    });
+    setChildrenProducts(updatedChildren);
+    return updatedChildren;
   };
 
   const submitHandler = async (ev) => {
@@ -263,26 +295,15 @@ const ProductDetail = (props) => {
     };
 
     //update children to newsest state
-    const tmpChildren = [];
-    childrenProducts.map((prod) => {
-      const product = {
-        ...prod,
-        name: updatedGeneralProduct.name,
-        status: updatedGeneralProduct.status,
-        description: updatedGeneralProduct.description,
-        categoryId: updatedGeneralProduct.categoryId,
-        media: updatedGeneralProduct.media,
-      };
-
-      tmpChildren.push(product);
-    });
+    const updatedChildren = updateChildrenProduct(updatedGeneralProduct);
 
     //call API
-    const productsToUpdate = [updatedGeneralProduct, ...tmpChildren];
+    const productsToUpdate = [updatedGeneralProduct, ...updatedChildren];
     try {
       for (let product of productsToUpdate) {
         console.log(product);
-        const res = await productApis.updateProductById(product._id, product);
+        // const res = await productApis.updateProductById(product._id, product);
+        // console.log(res.data);
       }
     } catch (error) {
       console.log(error.response.data.errorParams);
