@@ -13,6 +13,7 @@ import {
 } from "../../constants/control-default-value";
 import ProductDetailItem from "./ProductDetailItem";
 import { hashtagApis } from "../../apis/hashtag";
+import { mediaApi } from "../../apis/media";
 
 const ProductDetail = (props) => {
   const productType = PRODUCT_TYPE;
@@ -53,46 +54,17 @@ const ProductDetail = (props) => {
     setProductHashtags(hashtags);
   };
 
-  const mediaFileInputHandler = (event) => {
-    setMedia(event.target.files);
-  };
+  const mediaFileInputHandler = async (event) => {
+    const files = event.target.files;
 
-  const FirebaseUrlHandler = () => {
-    console.log(media);
-    const temp = [...mediaUrl];
-    const files = [...media];
     for (const file of files) {
-      console.log("check ..." + file);
+      const formData = new FormData();
+      formData.append("file", file);
       try {
-        let fileToUp = file;
-        const storage = firebase.storage();
-        const storageRef = storage.ref();
-        const uploadTask = storageRef
-          .child("media/" + fileToUp.name)
-          .put(fileToUp);
-        console.log("check");
-        uploadTask.on(
-          firebase.storage.TaskEvent.STATE_CHANGED,
-          (snapshot) => {
-            //progress check tien do upload file
-            //thay bang bien true hay false gi do de check da up dc file cung duoc
-            const progress =
-              Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setProgress(progress);
-          },
-          (error) => {
-            throw error;
-          },
-          () => {
-            uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-              console.log(url);
-              temp.push({ mediaUrl: url });
-              setMediaUrl(temp);
-            });
-          }
-        );
+        const res = await mediaApi.uploadFie(formData);
+        console.log(res);
       } catch (err) {
-        console.log(err.response);
+        console.log(err.response.data);
       }
     }
   };
@@ -301,22 +273,17 @@ const ProductDetail = (props) => {
         status: updatedGeneralProduct.status,
         description: updatedGeneralProduct.description,
         categoryId: updatedGeneralProduct.categoryId,
-        media: media,
+        media: updatedGeneralProduct.media,
       };
       tmpChildren.push(product);
     });
 
     const productToUpdate = [updatedGeneralProduct, ...tmpChildren];
     try {
-      let res = await productApis.updateProductById(
-        updatedGeneralProduct.id,
-        updatedGeneralProduct
-      );
-      console.log(res.data);
-      // productToUpdate.map((product) => {
-      //   // let res = await productApis.updateProductById(product.id, product);
-      //   console.log(product);
-      // });
+      productToUpdate.map(async (product) => {
+        let res = await productApis.updateProductById(product.id, product);
+        console.log(res.data);
+      });
     } catch (error) {
       console.log(error.response.data.errorParams);
     }
@@ -417,13 +384,6 @@ const ProductDetail = (props) => {
               />
             </div>
           </div>
-          <button
-            onClick={FirebaseUrlHandler}
-            type="button"
-            class="btn btn-primary"
-          >
-            Upload
-          </button>
         </div>
         <div className="form-group">
           {childrenProducts.map((product) => (

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import firebase from "../firebase/firebase";
 
 const ProductDetailItem = (props) => {
   const [name, setName] = useState("");
@@ -11,8 +12,10 @@ const ProductDetailItem = (props) => {
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [quantity, setQuantity] = useState(0);
-  const [thumbnailsItem, setThumbnailsItem] = useState([]);
+  const [thumbnailItem, setThumbnailItem] = useState();
+  const [thumbnailsItemUrl, setThumbnailsItemUrl] = useState("");
   const [productId, setProductId] = useState("");
+  const [progress, setProgress] = useState(0);
 
   const initData = () => {
     const product = props.product;
@@ -25,7 +28,7 @@ const ProductDetailItem = (props) => {
     setSize(product.size);
     setColor(product.color);
     setQuantity(product.quantity);
-    setThumbnailsItem(product.thumbnailUrl);
+    setThumbnailItem(product.thumbnailUrl);
     setProductId(product._id);
   };
 
@@ -45,15 +48,48 @@ const ProductDetailItem = (props) => {
       color,
       quantity,
       price,
-      thumbnailsItem,
+      thumbnailUrl: thumbnailsItemUrl,
     };
+    console.log(product);
     return product;
+  };
+  const FirebaseUrlHandler = () => {
+    let fileToUp = thumbnailItem;
+    console.log("check", fileToUp);
+    try {
+      const storage = firebase.storage();
+      const storageRef = storage.ref();
+      const uploadTask = storageRef
+        .child("media/" + fileToUp.name)
+        .put(fileToUp);
+      console.log("check");
+      uploadTask.on(
+        firebase.storage.TaskEvent.STATE_CHANGED,
+        (snapshot) => {
+          const progress =
+            Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setProgress(progress);
+        },
+        (error) => {
+          throw error;
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+            console.log(url);
+            setThumbnailsItemUrl(url);
+            setThumbnailItem(url);
+          });
+        }
+      );
+    } catch (err) {
+      console.log(err.response);
+    }
   };
 
   useEffect(() => {
     const product = getProduct();
     props.onChangeInput(product);
-  }, [size, color, quantity, price]);
+  }, [size, color, quantity, price, thumbnailsItemUrl]);
 
   return (
     <>
@@ -105,7 +141,7 @@ const ProductDetailItem = (props) => {
       <div className="form-group">
         <div className="form-row">
           <img
-            src={thumbnailsItem}
+            src={thumbnailItem}
             alt="Girl in a jacket"
             width="100"
             height="100"
@@ -123,10 +159,16 @@ const ProductDetailItem = (props) => {
             <input
               type="file"
               accept="image/*"
-              multiple={true}
-              onChange={(event) => setThumbnailsItem(event.target.files)}
+              onChange={(event) => setThumbnailItem(event.target.files[0])}
             />
           </div>
+          <button
+            onClick={FirebaseUrlHandler}
+            type="button"
+            className="btn btn-primary"
+          >
+            Upload
+          </button>
         </div>
       </div>
     </>
