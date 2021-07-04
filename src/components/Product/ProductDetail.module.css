@@ -33,3 +33,9 @@
   width: 120px;
   height: 130px;
 }
+
+.info {
+  color: #000000;
+  font-weight: bold;
+  background-color: #a2b9bc;
+}

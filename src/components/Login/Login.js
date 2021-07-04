@@ -1,12 +1,9 @@
-import React, { Fragment, useState, useContext, useLayoutEffect } from "react";
+import React, { Fragment, useState, useLayoutEffect } from "react";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Login.css";
-
-import { API_SUCCSES, JWT_TOKEN, LOCAL_BRAND_KEY } from "../../constants";
+import { API_SUCCSES, JWT_TOKEN } from "../../constants";
 import { authService } from "../../service/auth";
-import { localbrandsApis } from "../../apis/localbrands";
-import Landing from "../Landing/Landing";
 import { useHistory } from "react-router-dom";
 
 const Login = (props) => {
@@ -115,7 +112,7 @@ const Login = (props) => {
               Submit
             </button>
             <p className="forgot-password text-right">
-              Forgot <a href="#">password?</a>
+              Forgot <a href="">password?</a>
             </p>
             <p className="text-center">Or Login with</p>
             <p className="text-center">

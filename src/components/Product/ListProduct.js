@@ -1,9 +1,8 @@
 import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState, useEffect, useLayoutEffect, useContext } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { productApis } from "../../apis/product";
-import { API_SUCCSES, JWT_TOKEN } from "../../constants";
-import AppContext from "../store/app-context";
+import { API_SUCCSES, JWT_TOKEN, JWT_TOKEN_VALUE } from "../../constants";
 import { useHistory } from "react-router-dom";
 
 import classes from "./ListProduct.module.css";
@@ -24,6 +23,9 @@ export default function ListProduct(props) {
   const [hasNext, setHasNext] = useState(true);
   const [havPrev, setHavPrev] = useState(true);
 
+  const [serverErrors, setServerErrors] = useState();
+  const [deleteError, setDeleteError] = useState();
+
   const getData = async (brandId, page) => {
     if (brandId != null) {
       try {
@@ -40,7 +42,10 @@ export default function ListProduct(props) {
           setHavPrev(res.data.hasPrevPage);
         }
       } catch (err) {
-        //Exception Handler later
+        const msg = err.response.data.errorParams;
+        let serverMsg = serverErrors;
+        serverMsg += msg + "\n";
+        setServerErrors(serverMsg);
       }
     }
   };
@@ -54,16 +59,12 @@ export default function ListProduct(props) {
       brandIdFormatted.push(brandId);
       getData(brandIdFormatted, page);
     } catch (err) {
-      console.log("Auth Error");
+      const msg = err.response.data.errorParams;
+      let serverMsg = serverErrors;
+      serverMsg += msg + "\n";
+      setServerErrors(serverMsg);
     }
   };
-
-  useEffect(() => {
-    if (localStorage.getItem(JWT_TOKEN) === null) {
-      console.log("CHECK STORAGE");
-      history.push("/login");
-    }
-  }, [localStorage.getItem(JWT_TOKEN)]);
 
   useEffect(() => {
     async function init() {
@@ -74,6 +75,7 @@ export default function ListProduct(props) {
 
   const deleteProduct = async (id) => {
     try {
+      setDeleteError();
       const res = await productApis.deleteProductById(id);
       if (res.status === API_SUCCSES) {
         const brandIdFormatted = [];
@@ -81,13 +83,12 @@ export default function ListProduct(props) {
         getData(brandIdFormatted, page);
       }
     } catch (err) {
-      //Exception Handler later
+      setDeleteError(err.response.data.errorParams);
     }
   };
 
   const updateProduct = (id) => {
     props.onGetProductId(id);
-    console.log(id);
     history.push("/home/productDetail");
   };
 
@@ -126,6 +127,7 @@ export default function ListProduct(props) {
                     <button onClick={() => deleteProduct(item._id)}>
                       <FontAwesomeIcon icon={faTrashAlt} />
                     </button>
+                    <br />
                   </td>
                 </tr>
               );

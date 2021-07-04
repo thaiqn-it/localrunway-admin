@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useRouteMatch,
-  Link,
-} from "react-router-dom";
+import { Switch, Route, useRouteMatch, Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { JWT_TOKEN } from "../../constants";
 import ListProduct from "../Product/ListProduct";
-import ProductDetail from "../Product/ProductDetail.js";
+import ProductDetail from "../Product/ProductDetail";
 import "./Landing.css";
 
 const Landing = (props) => {
@@ -24,22 +18,21 @@ const Landing = (props) => {
 
   const checkIsLoggedIn = () => {
     if (localStorage.getItem(JWT_TOKEN) === null) {
-      console.log("CHECK STORAGE");
       history.push("/login");
     }
   };
 
-  useEffect(() => checkIsLoggedIn(), [props.isLoggedIn]);
+  useEffect(
+    () => checkIsLoggedIn(),
+    [props.isLoggedIn, localStorage.getItem(JWT_TOKEN)]
+  );
 
   return (
     <div className="landing-wrapper">
       <div className="side-nav-bar shadow-lg bg-white">
         <div className="nav-wrapper">
           <Link className="nav-link" to={`${url}/products`}>
-            Products
-          </Link>
-          <Link className="nav-link" to={`${url}/orders`}>
-            Orders
+            List Products
           </Link>
         </div>
       </div>

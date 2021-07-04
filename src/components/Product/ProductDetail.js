@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import classes from "./ProductDetail.module.css";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../../../node_modules/jquery/dist/jquery.min.js";
@@ -14,6 +14,8 @@ import ProductDetailItem from "./ProductDetailItem";
 import { hashtagApis } from "../../apis/hashtag";
 import { mediaApi } from "../../apis/media";
 import ErrorFormInput from "../UI/ErrorFormInput";
+import ServerError from "../UI/ServerError";
+import { useHistory } from "react-router-dom";
 
 const ProductDetail = (props) => {
   const productType = PRODUCT_TYPE;
@@ -41,7 +43,11 @@ const ProductDetail = (props) => {
   const [mediaError, setMediaError] = useState();
   const [statusError, setStatusError] = useState();
   const [productTypeErros, setProductTypeErrors] = useState();
-  const [childrenErrors, setChildrenErrors] = useState("");
+  const [childrenErrors, setChildrenErrors] = useState();
+
+  const [isUpdate, setIsUpdate] = useState(false);
+
+  const history = useHistory();
 
   const transformCategories = (categories) => {
     let catesType = [];
@@ -75,7 +81,12 @@ const ProductDetail = (props) => {
         const tmp = [...mediaUrl];
         tmp.push({ mediaUrl: publicUrl });
         setMediaUrl(tmp);
-      } catch (err) {}
+      } catch (err) {
+        const msg = err.response.data.errorParams;
+        let serverMsg = serverErros;
+        serverMsg += msg + "\n";
+        setServerErrors(serverMsg);
+      }
     }
   };
 
@@ -91,7 +102,10 @@ const ProductDetail = (props) => {
       tmp.splice(index, 1);
       setProductHashtags(tmp);
     } catch (err) {
-      console.log(err.response.data.errorParams);
+      const msg = err.response.data.errorParams;
+      let serverMsg = serverErros;
+      serverMsg += msg + "\n";
+      setServerErrors(serverMsg);
     }
   };
 
@@ -119,7 +133,12 @@ const ProductDetail = (props) => {
         tmp.push({ id: _id, name: tagInput });
         setProductHashtags(tmp);
         setTagInput("");
-      } catch (err) {}
+      } catch (err) {
+        const msg = err.response.data.errorParams;
+        let serverMsg = serverErros;
+        serverMsg += msg + "\n";
+        setServerErrors(serverMsg);
+      }
     }
   };
 
@@ -136,7 +155,10 @@ const ProductDetail = (props) => {
         setMedia(res.data.product.media);
       }
     } catch (err) {
-      //redirect?
+      const msg = err.response.data.errorParams;
+      let serverMsg = serverErros;
+      serverMsg += msg + "\n";
+      setServerErrors(serverMsg);
     }
   };
 
@@ -172,14 +194,24 @@ const ProductDetail = (props) => {
         });
       });
       setChildrenProducts(formattedProductList);
-    } catch (err) {}
+    } catch (err) {
+      const msg = err.response.data.errorParams;
+      let serverMsg = serverErros;
+      serverMsg += msg + "\n";
+      setServerErrors(serverMsg);
+    }
   };
 
   const getProductHashtags = async (id) => {
     try {
       const res = await productApis.getProductHashtags(id);
       transformProductHashtags(res.data.hashtags);
-    } catch (err) {}
+    } catch (err) {
+      const msg = err.response.data.errorParams;
+      let serverMsg = serverErros;
+      serverMsg += msg + "\n";
+      setServerErrors(serverMsg);
+    }
   };
 
   const getCategory = async () => {
@@ -190,15 +222,24 @@ const ProductDetail = (props) => {
         const categories = res.data.categories;
         transformCategories(categories);
       }
-    } catch (err) {}
+    } catch (err) {
+      const msg = err.response.data.errorParams;
+      let serverMsg = serverErros;
+      serverMsg += msg + "\n";
+      setServerErrors(serverMsg);
+    }
   };
 
   useEffect(() => {
     async function initData() {
-      await getExistingGeneralProduct(productId);
-      await getCategory(productId);
-      await getProductHashtags(productId);
-      await getChildrenProducts(productId);
+      if (productId) {
+        await getExistingGeneralProduct(productId);
+        await getCategory(productId);
+        await getProductHashtags(productId);
+        await getChildrenProducts(productId);
+      } else {
+        history.push("/home/");
+      }
     }
     initData();
   }, [productId]);
@@ -240,12 +281,7 @@ const ProductDetail = (props) => {
 
       const tmp = [...childrenProducts];
       tmp[index] = updatedchildrenProduct;
-
-      console.log("yyy");
-      console.log(updatedchildrenProduct);
       setChildrenProducts(tmp);
-      console.log("xxx");
-      console.log(childrenProducts);
     }
   };
 
@@ -298,8 +334,8 @@ const ProductDetail = (props) => {
     try {
       for (let product of productsToUpdate) {
         const res = await productApis.updateProductById(product._id, product);
-        console.log(res.data);
       }
+      setIsUpdate(true);
     } catch (error) {
       const {
         brandId,
@@ -314,7 +350,7 @@ const ProductDetail = (props) => {
         thumbnailUrl,
         type,
       } = error.response.data.errorParams;
-      // console.log(error.response.data.errorParams);
+
       if (brandId) {
         setServerErrors(brandId);
       }
@@ -365,156 +401,189 @@ const ProductDetail = (props) => {
 
   return (
     <div className={classes.container}>
-      <form>
-        <div className="form-row">
-          <div className="form-group col-md-4">
-            <label htmlFor="name">Name</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Product name"
-              value={name}
-              onChange={(event) => {
-                setNameError();
-                setName(event.target.value);
-              }}
-            />
-            {nameError && <ErrorFormInput errorMsg={nameError} />}
-          </div>
-
-          <div className="form-group col-md-2">
-            <label htmlFor="inputType">Product Type</label>
-            <Select
-              options={productType}
-              value={productType.find((obj) => obj.value === type)}
-              required
-              onChange={(productType) => {
-                setProductTypeErrors();
-                setType(productType);
-              }}
-            />
-            {productTypeErros && <ErrorFormInput errorMsg={productTypeErros} />}
-          </div>
-          <div className="form-group col-md-2">
-            <label htmlFor="inputState">Product Status</label>
-            <Select
-              options={statusType}
-              value={statusType.find((obj) => obj.value === status)}
-              required
-              onChange={(status) => {
-                setStatusError();
-                setStatus(status.value);
-              }}
-            />
-            {statusError && <ErrorFormInput errorMsg={statusError} />}
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group col-md-8">
-            <label htmlFor="textareaDes">Description</label>
-            <textarea
-              onChange={(event) => {
-                setDesError();
-                setDescription(event.target.value);
-              }}
-              value={description}
-              className="form-control"
-              id="textareaDes"
-            ></textarea>
-            {desError && <ErrorFormInput errorMsg={desError} />}
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group col-md-3">
-            <label htmlFor="inputCategory">Category</label>
-            <Select
-              options={categoriesType}
-              value={categoriesType.find((obj) => obj.value === categoryId)}
-              required
-              onChange={(cate) => {
-                setCategoryId(cate.value);
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="inputCategory">Hashtags</label>
-          <div className={classes.tagList}>
-            {productHashtags.map((tag) => (
-              <div
-                className={classes.taglistItem}
-                key={tag.id}
-                onClick={() => deleteHashtagHandler(tag.id)}
-              >
-                #{tag.name}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group col-md-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Input Hashtags"
-              value={tagInput}
-              onChange={(event) => setTagInput(event.target.value)}
-              onKeyDown={(event) => addHashtagHandler(event)}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="formThumbnail">Product's Media Images</label>
+      {serverErros && (
+        <ServerError
+          errorMsg={serverErros}
+          onGoBack={() => history.push("/home")}
+        />
+      )}
+      {!serverErros && (
+        <form>
           <div className="form-row">
-            {mediaUrl.map((url) => (
-              <img
-                className={classes.image_slide}
-                src={url.mediaUrl}
-                alt="media of image"
-              />
-            ))}
-          </div>
-          <div className="form-row">
-            <div className="form-group">
+            <div className="form-group col-md-4">
+              <label htmlFor="name">Name</label>
               <input
-                type="file"
-                accept="image/*"
-                multiple={true}
-                onChange={mediaFileInputHandler}
+                type="text"
+                className="form-control"
+                placeholder="Product name"
+                value={name}
+                onChange={(event) => {
+                  setNameError();
+                  setName(event.target.value);
+                }}
               />
-              {mediaError && <ErrorFormInput errorMsg={mediaError} />}
+              {nameError && <ErrorFormInput errorMsg={nameError} />}
+            </div>
+
+            <div className="form-group col-md-2">
+              <label htmlFor="inputType">Product Type</label>
+              <Select
+                options={productType}
+                value={productType.find((obj) => obj.value === type)}
+                required
+                onChange={(productType) => {
+                  setProductTypeErrors();
+                  setType(productType);
+                }}
+              />
+              {productTypeErros && (
+                <ErrorFormInput errorMsg={productTypeErros} />
+              )}
+            </div>
+            <div className="form-group col-md-2">
+              <label htmlFor="inputState">Product Status</label>
+              <Select
+                options={statusType}
+                value={statusType.find((obj) => obj.value === status)}
+                required
+                onChange={(status) => {
+                  setStatusError();
+                  setStatus(status.value);
+                }}
+              />
+              {statusError && <ErrorFormInput errorMsg={statusError} />}
             </div>
           </div>
-        </div>
-        <div className="form-group">
-          {childrenProducts.map((product) => (
-            <ProductDetailItem
-              product={product}
-              onChangeInput={getDetailProductInput}
-              status={status}
-              name={name}
-              description={description}
-              categoryId={categoryId}
-              childrenErrors={childrenErrors}
-            />
-          ))}
-        </div>
 
-        <div className="form-group">
-          {childrenErrors && <ErrorFormInput errorMsg={childrenErrors} />}
-        </div>
+          <div className="form-row">
+            <div className="form-group col-md-8">
+              <label htmlFor="textareaDes">Description</label>
+              <textarea
+                onChange={(event) => {
+                  setDesError();
+                  setDescription(event.target.value);
+                }}
+                value={description}
+                className="form-control"
+                id="textareaDes"
+              ></textarea>
+              {desError && <ErrorFormInput errorMsg={desError} />}
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group col-md-3">
+              <label htmlFor="inputCategory">Category</label>
+              <Select
+                options={categoriesType}
+                value={categoriesType.find((obj) => obj.value === categoryId)}
+                required
+                onChange={(cate) => {
+                  setCategoryId(cate.value);
+                }}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="inputCategory">Hashtags</label>
+            <div className={classes.tagList}>
+              {productHashtags.map((tag) => (
+                <div
+                  className={classes.taglistItem}
+                  key={tag.id}
+                  onClick={() => deleteHashtagHandler(tag.id)}
+                >
+                  #{tag.name}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group col-md-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Input Hashtags"
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={(event) => addHashtagHandler(event)}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="formThumbnail">Product's Media Images</label>
+            <div className="form-row">
+              {mediaUrl.map((url) => (
+                <img
+                  className={classes.image_slide}
+                  src={url.mediaUrl}
+                  alt="media"
+                />
+              ))}
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple={true}
+                  onChange={mediaFileInputHandler}
+                />
+                {mediaError && <ErrorFormInput errorMsg={mediaError} />}
+              </div>
+            </div>
+          </div>
+          <div className="form-group">
+            {childrenProducts.map((product) => (
+              <ProductDetailItem
+                product={product}
+                onChangeInput={getDetailProductInput}
+                status={status}
+                name={name}
+                description={description}
+                categoryId={categoryId}
+                childrenErrors={childrenErrors}
+              />
+            ))}
+          </div>
 
-        <div className="form-group">
-          <button
-            onClick={submitHandler}
-            type="button"
-            className="btn btn-primary"
-          >
-            Update
-          </button>
-        </div>
-      </form>
+          <div className="form-group">
+            {childrenErrors && <ErrorFormInput errorMsg={childrenErrors} />}
+          </div>
+          {isUpdate && (
+            <div className="form-group">
+              <div className="form-row">
+                <div className="col-12">
+                  <p>
+                    <span className={classes.info}>
+                      Update Success! Please press here to go back
+                    </span>
+                  </p>
+
+                  <button
+                    onClick={() => history.push("/home")}
+                    type="button"
+                    className="btn btn-info"
+                  >
+                    Go Back
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isUpdate && (
+            <div className="form-group">
+              <button
+                onClick={submitHandler}
+                type="button"
+                className="btn btn-dark"
+              >
+                Update
+              </button>
+            </div>
+          )}
+        </form>
+      )}
     </div>
   );
 };
