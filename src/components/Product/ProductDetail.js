@@ -5,7 +5,6 @@ import "../../../node_modules/jquery/dist/jquery.min.js";
 import { productApis } from "../../apis/product";
 import { API_SUCCSES } from "../../constants";
 import Select from "react-select";
-import firebase from "../firebase/firebase";
 import { categoryApis } from "../../apis/category";
 import {
   PRODUCT_TYPE,
@@ -14,6 +13,7 @@ import {
 import ProductDetailItem from "./ProductDetailItem";
 import { hashtagApis } from "../../apis/hashtag";
 import { mediaApi } from "../../apis/media";
+import ErrorFormInput from "../UI/ErrorFormInput";
 
 const ProductDetail = (props) => {
   const productType = PRODUCT_TYPE;
@@ -34,8 +34,14 @@ const ProductDetail = (props) => {
   const [categoriesType, setCategoriesType] = useState([]);
 
   const [tagInput, setTagInput] = useState("");
+
   const [serverErros, setServerErrors] = useState();
-  const [errors, setErrors] = useState();
+  const [nameError, setNameError] = useState();
+  const [desError, setDesError] = useState();
+  const [mediaError, setMediaError] = useState();
+  const [statusError, setStatusError] = useState();
+  const [productTypeErros, setProductTypeErrors] = useState();
+  const [childrenErrors, setChildrenErrors] = useState("");
 
   const transformCategories = (categories) => {
     let catesType = [];
@@ -56,6 +62,7 @@ const ProductDetail = (props) => {
   };
 
   const mediaFileInputHandler = async (event) => {
+    setMediaError();
     setMedia(event.target.files);
     const files = event.target.files;
 
@@ -68,9 +75,7 @@ const ProductDetail = (props) => {
         const tmp = [...mediaUrl];
         tmp.push({ mediaUrl: publicUrl });
         setMediaUrl(tmp);
-      } catch (err) {
-        setErrors(err.response.data.errorParams);
-      }
+      } catch (err) {}
     }
   };
 
@@ -114,9 +119,7 @@ const ProductDetail = (props) => {
         tmp.push({ id: _id, name: tagInput });
         setProductHashtags(tmp);
         setTagInput("");
-      } catch (err) {
-        setErrors(err.response.data.errorParams);
-      }
+      } catch (err) {}
     }
   };
 
@@ -134,7 +137,6 @@ const ProductDetail = (props) => {
       }
     } catch (err) {
       //redirect?
-      setErrors(err.response.data.errorParams);
     }
   };
 
@@ -170,18 +172,14 @@ const ProductDetail = (props) => {
         });
       });
       setChildrenProducts(formattedProductList);
-    } catch (err) {
-      setErrors(err.response.data.errorParams);
-    }
+    } catch (err) {}
   };
 
   const getProductHashtags = async (id) => {
     try {
       const res = await productApis.getProductHashtags(id);
       transformProductHashtags(res.data.hashtags);
-    } catch (err) {
-      setErrors(err.response.data.errorParams);
-    }
+    } catch (err) {}
   };
 
   const getCategory = async () => {
@@ -192,9 +190,7 @@ const ProductDetail = (props) => {
         const categories = res.data.categories;
         transformCategories(categories);
       }
-    } catch (err) {
-      setErrors(err.response.data.errorParams);
-    }
+    } catch (err) {}
   };
 
   useEffect(() => {
@@ -208,6 +204,7 @@ const ProductDetail = (props) => {
   }, [productId]);
 
   const getDetailProductInput = (productToUpdate) => {
+    setChildrenErrors();
     const {
       _id,
       size,
@@ -264,7 +261,6 @@ const ProductDetail = (props) => {
         categoryId: updatedGeneralProduct.categoryId,
         media: updatedGeneralProduct.media,
       };
-      console.log(product);
       updatedChildren.push(product);
     });
     setChildrenProducts(updatedChildren);
@@ -301,12 +297,69 @@ const ProductDetail = (props) => {
     const productsToUpdate = [updatedGeneralProduct, ...updatedChildren];
     try {
       for (let product of productsToUpdate) {
-        console.log(product);
-        // const res = await productApis.updateProductById(product._id, product);
-        // console.log(res.data);
+        const res = await productApis.updateProductById(product._id, product);
+        console.log(res.data);
       }
     } catch (error) {
-      console.log(error.response.data.errorParams);
+      const {
+        brandId,
+        color,
+        description,
+        media,
+        name,
+        price,
+        quantity,
+        size,
+        status,
+        thumbnailUrl,
+        type,
+      } = error.response.data.errorParams;
+      // console.log(error.response.data.errorParams);
+      if (brandId) {
+        setServerErrors(brandId);
+      }
+      if (color) {
+        let childMsg = childrenErrors;
+        childMsg += "color: " + color + "\n";
+        setChildrenErrors(childMsg);
+      }
+      if (description) {
+        setDesError(description);
+      }
+      if (media) {
+        setMediaError(media);
+      }
+      if (name) {
+        let childMsg = childrenErrors;
+        childMsg += "name: " + name + "\n";
+        setChildrenErrors(childMsg);
+      }
+      if (price) {
+        let childMsg = childrenErrors;
+        childMsg += "price: " + price + "\n";
+        setChildrenErrors(childMsg);
+      }
+      if (quantity) {
+        let childMsg = childrenErrors;
+        childMsg += "quantity: " + quantity + "\n";
+        setChildrenErrors(childMsg);
+      }
+      if (size) {
+        let childMsg = childrenErrors;
+        childMsg += "size: " + size + "\n";
+        setChildrenErrors(childMsg);
+      }
+      if (status) {
+        setStatusError(status);
+      }
+      if (thumbnailUrl) {
+        let childMsg = childrenErrors;
+        childMsg += "thumbnail: " + thumbnailUrl + "\n";
+        setChildrenErrors(childMsg);
+      }
+      if (type) {
+        setProductTypeErrors(type);
+      }
     }
   };
 
@@ -321,8 +374,12 @@ const ProductDetail = (props) => {
               className="form-control"
               placeholder="Product name"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => {
+                setNameError();
+                setName(event.target.value);
+              }}
             />
+            {nameError && <ErrorFormInput errorMsg={nameError} />}
           </div>
 
           <div className="form-group col-md-2">
@@ -331,8 +388,12 @@ const ProductDetail = (props) => {
               options={productType}
               value={productType.find((obj) => obj.value === type)}
               required
-              onChange={(productType) => setType(productType)}
+              onChange={(productType) => {
+                setProductTypeErrors();
+                setType(productType);
+              }}
             />
+            {productTypeErros && <ErrorFormInput errorMsg={productTypeErros} />}
           </div>
           <div className="form-group col-md-2">
             <label htmlFor="inputState">Product Status</label>
@@ -340,8 +401,12 @@ const ProductDetail = (props) => {
               options={statusType}
               value={statusType.find((obj) => obj.value === status)}
               required
-              onChange={(status) => setStatus(status.value)}
+              onChange={(status) => {
+                setStatusError();
+                setStatus(status.value);
+              }}
             />
+            {statusError && <ErrorFormInput errorMsg={statusError} />}
           </div>
         </div>
 
@@ -349,11 +414,15 @@ const ProductDetail = (props) => {
           <div className="form-group col-md-8">
             <label htmlFor="textareaDes">Description</label>
             <textarea
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(event) => {
+                setDesError();
+                setDescription(event.target.value);
+              }}
               value={description}
               className="form-control"
               id="textareaDes"
             ></textarea>
+            {desError && <ErrorFormInput errorMsg={desError} />}
           </div>
         </div>
         <div className="form-row">
@@ -363,7 +432,9 @@ const ProductDetail = (props) => {
               options={categoriesType}
               value={categoriesType.find((obj) => obj.value === categoryId)}
               required
-              onChange={(cate) => setCategoryId(cate.value)}
+              onChange={(cate) => {
+                setCategoryId(cate.value);
+              }}
             />
           </div>
         </div>
@@ -412,6 +483,7 @@ const ProductDetail = (props) => {
                 multiple={true}
                 onChange={mediaFileInputHandler}
               />
+              {mediaError && <ErrorFormInput errorMsg={mediaError} />}
             </div>
           </div>
         </div>
@@ -424,8 +496,13 @@ const ProductDetail = (props) => {
               name={name}
               description={description}
               categoryId={categoryId}
+              childrenErrors={childrenErrors}
             />
           ))}
+        </div>
+
+        <div className="form-group">
+          {childrenErrors && <ErrorFormInput errorMsg={childrenErrors} />}
         </div>
 
         <div className="form-group">

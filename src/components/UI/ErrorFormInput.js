@@ -2,7 +2,7 @@ import React from "react";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
 
 const ErrorFormInput = (props) => {
-  return <div className="alert alert-danger mt-2">{props.error}</div>;
+  return <div className="alert alert-danger mt-2 col-3">{props.errorMsg}</div>;
 };
 
 export default ErrorFormInput;

@@ -1,7 +1,7 @@
 import { defaultInstance } from ".";
 
 const getListProductByBrand = (brandId, page, type) => {
-  return defaultInstance.get("/products/", {
+  return defaultInstance.get("/products", {
     params: {
       brandIds: brandId,
       page: page,

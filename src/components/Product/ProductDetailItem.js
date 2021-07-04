@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { mediaApi } from "../../apis/media";
-import firebase from "../firebase/firebase";
 import classes from "./ProductDetailItem.module.css";
 
 const ProductDetailItem = (props) => {
@@ -64,7 +63,6 @@ const ProductDetailItem = (props) => {
     try {
       const res = await mediaApi.uploadFie(formData);
       const { publicUrl } = res.data;
-      console.log(publicUrl);
       setThumbnailItem(publicUrl);
     } catch (err) {
       console.log(err.response.data);
@@ -103,7 +101,9 @@ const ProductDetailItem = (props) => {
             className="form-control"
             placeholder="Product Color"
             value={color}
-            onChange={(event) => setColor(event.target.value)}
+            onChange={(event) => {
+              setColor(event.target.value);
+            }}
           ></input>
         </div>
         <div className="form-group col-md-1">
@@ -113,7 +113,9 @@ const ProductDetailItem = (props) => {
             className="form-control"
             placeholder="Product Quantity"
             value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
+            onChange={(event) => {
+              setQuantity(event.target.value);
+            }}
           ></input>
         </div>
         <div className="form-group col-md-2">
@@ -123,7 +125,9 @@ const ProductDetailItem = (props) => {
             className="form-control"
             placeholder="Product Price"
             value={price}
-            onChange={(event) => setPrice(event.target.value)}
+            onChange={(event) => {
+              setPrice(event.target.value);
+            }}
           ></input>
         </div>
       </div>
@@ -139,7 +143,9 @@ const ProductDetailItem = (props) => {
             <input
               type="file"
               accept="image/*"
-              onChange={(event) => thumbnailInputHandler(event.target.files[0])}
+              onChange={(event) => {
+                thumbnailInputHandler(event.target.files[0]);
+              }}
             />
           </div>
         </div>
