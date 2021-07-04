@@ -58,7 +58,7 @@ const Landing = (props) => {
           />
           <Route
             path={`${path}/create`}
-            component={() => <CreateProduct />}
+            component={() => <CreateProduct onGetProductId={getProductId} />}
           ></Route>
         </Switch>
       </div>

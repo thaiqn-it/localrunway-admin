@@ -5,10 +5,16 @@ import { productApis } from "../../apis/product";
 import { API_BAD_REQUEST, API_SUCCSES } from "../../constants";
 import AppContext from "../store/app-context";
 
-import classes from "./CreateProduct.module.css";
+import classes from "./CreateProductHashtag.module.css";
 import { hashtagApis } from "../../apis/hashtag";
 import { productHashtagApi } from "../../apis/productHastag";
-export default function CreateProductHashtag({ productId }) {
+
+export default function CreateProductHashtag({
+  productId,
+  prodcutHashtags,
+  updateMode,
+  handleHashtagsListChange,
+}) {
   const submitError = {
     productName: null,
     description: null,
@@ -16,7 +22,6 @@ export default function CreateProductHashtag({ productId }) {
     categoryId: null,
     hashtags: null,
   };
-  const NEW_HASHTAG = 0;
 
   const [hashtagSuggetionList, setHashtagSuggetionList] = useState([]);
   const [hashtags, setHashtags] = useState([]);
@@ -24,6 +29,12 @@ export default function CreateProductHashtag({ productId }) {
   const [showSuggetion, setShowSuggetion] = useState(false);
 
   const [error, setError] = useState(submitError);
+
+  const onInit = () => {
+    if (updateMode === true) {
+      setHashtags(prodcutHashtags);
+    }
+  };
 
   const suggetionWrapperRef = useRef(null);
   const checkHashtagSelected = (hashtag) => {
@@ -40,12 +51,26 @@ export default function CreateProductHashtag({ productId }) {
       }
     } catch (err) {}
   };
+  const checkInputHashtagInSuggetionList = (hashtagName) => {
+    let result = -1;
+    const tmp = [...hashtagSuggetionList];
+    tmp.forEach((hashtag, index) => {
+      if (hashtag.name == hashtagName) {
+        result = index;
+      }
+    });
+    return result;
+  };
   const handleHashTagSuggetionClick = async (index) => {
     const tmp = [...hashtags];
     let selectedHashtag = hashtagSuggetionList[index];
-    const productHashtagId = await createProductHashtag(selectedHashtag);
-    selectedHashtag = { ...selectedHashtag, productHashtagId };
+    if (updateMode === true) {
+      const productHashtagId = await createProductHashtag(selectedHashtag);
+      selectedHashtag = { ...selectedHashtag, productHashtagId };
+    }
+
     tmp.push(selectedHashtag);
+    console.log(`add element at ${index}`);
     setHashtags(tmp);
     setTagInput("");
   };
@@ -55,7 +80,7 @@ export default function CreateProductHashtag({ productId }) {
         hashtagId,
         productId
       );
-      if (res === API_SUCCSES) {
+      if (res.status === API_SUCCSES) {
         return res.data.productHashtag._id;
       }
     } catch (err) {
@@ -77,7 +102,7 @@ export default function CreateProductHashtag({ productId }) {
   const createHashtag = async (hashtagName) => {
     try {
       const res = await hashtagApis.postHashtag(hashtagName);
-      if (res === API_SUCCSES) {
+      if (res.status === API_SUCCSES) {
         return res.data.hashtag;
       }
     } catch (err) {}
@@ -92,7 +117,10 @@ export default function CreateProductHashtag({ productId }) {
   const deleteHashtagHandler = async (i) => {
     console.log(i);
     const tmp = [...hashtags];
-    await deleteProductHashTag(tmp[i]._id);
+    if (updateMode === true) {
+      await deleteProductHashTag(tmp[i]._id);
+    }
+
     tmp.splice(i, 1);
     setHashtags(tmp);
   };
@@ -106,17 +134,30 @@ export default function CreateProductHashtag({ productId }) {
     ) {
       const tmp = [...hashtags];
       let newHashtag = await createHashtag(tagInput);
-      const productHashtagId = await createProductHashtag(newHashtag._id);
-      newHashtag = { ...newHashtag, productHashtagId };
+      const indexOfInput = checkInputHashtagInSuggetionList(tagInput);
+      console.log(indexOfInput);
+      if (indexOfInput != -1) {
+        console.log("handle input duplicate");
+        handleHashTagSuggetionClick(indexOfInput);
+      } else {
+        if (updateMode === true) {
+          const productHashtagId = await createProductHashtag(newHashtag._id);
+          newHashtag = { ...newHashtag, productHashtagId };
+          console.log(newHashtag);
+          tmp.push(newHashtag);
 
-      tmp.push({ newHashtag });
+          setHashtags(tmp);
+        }
+      }
 
-      setHashtags(tmp);
       setTagInput("");
     }
   };
-
   useEffect(() => {
+    handleHashtagsListChange(hashtags);
+  }, [hashtags]);
+  useEffect(() => {
+    onInit();
     getHashtagSuggetionlist();
   }, []);
   useEffect(() => {
@@ -130,65 +171,56 @@ export default function CreateProductHashtag({ productId }) {
   }, []);
   return (
     <>
-      <div className={classes.container}>
-        <div className="form-group">
-          <label htmlFor="inputCategory">Hashtags</label>
-          <div className={classes.tagList}>
-            {hashtags.map((tag, key) => (
-              <div
-                className={classes.taglistItem}
-                key={key}
-                onClick={() => deleteHashtagHandler(key)}
-              >
-                #{tag.name}
-              </div>
-            ))}
-          </div>
+      <div className="form-group">
+        <label htmlFor="inputCategory">Hashtags</label>
+        <div className={classes.tagList}>
+          {[...hashtags].map((tag, key) => (
+            <div
+              className={classes.taglistItem}
+              key={key}
+              onClick={() => deleteHashtagHandler(key)}
+            >
+              #{tag.name}
+            </div>
+          ))}
         </div>
-        <div className="form-row">
-          <div className="form-group col-md-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Input Hashtags"
-              value={tagInput}
-              onChange={(event) => setTagInput(event.target.value)}
-              onKeyDown={(event) => addHashtagHandler(event)}
-              onClick={() => setShowSuggetion(true)}
-              // onClick={console.log("clicked")}
-            />
-            {showSuggetion && (
-              <div className={"hashtagSuggetion"} ref={suggetionWrapperRef}>
-                {[...hashtagSuggetionList]
-                  .filter(
-                    (hashtag) =>
-                      hashtag.name.indexOf(tagInput.toLowerCase()) > -1 &&
-                      !checkHashtagSelected(hashtag)
-                  )
+      </div>
+      <div className="form-row">
+        <div className="form-group col-md-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Input Hashtags"
+            value={tagInput}
+            onChange={(event) => setTagInput(event.target.value)}
+            onKeyDown={(event) => addHashtagHandler(event)}
+            onClick={() => setShowSuggetion(true)}
+            // onClick={console.log("clicked")}
+          />
+          {showSuggetion && (
+            <div className={classes.hashtagSuggetion} ref={suggetionWrapperRef}>
+              {[...hashtagSuggetionList]
+                .filter(
+                  (hashtag) =>
+                    hashtag.name.indexOf(tagInput.toLowerCase()) > -1 &&
+                    !checkHashtagSelected(hashtag)
+                )
 
-                  .slice(0, 5)
-                  .map((hashtag) => {
-                    return (
-                      <div
-                        className={"suggetion"}
-                        key={hashtag.index}
-                        onClick={() =>
-                          handleHashTagSuggetionClick(hashtag.index)
-                        }
-                        tabIndex={0}
-                      >
-                        <span>{hashtag.name}</span>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label for="description">Hash Tag</label>
-
+                .slice(0, 5)
+                .map((hashtag) => {
+                  return (
+                    <div
+                      className={classes.suggetion}
+                      key={hashtag.index}
+                      onClick={() => handleHashTagSuggetionClick(hashtag.index)}
+                      tabIndex={0}
+                    >
+                      <span>{hashtag.name}</span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
           {error.hashtags === null ? (
             ""
           ) : (
@@ -197,22 +229,6 @@ export default function CreateProductHashtag({ productId }) {
             </div>
           )}
         </div>
-        <div className="form-group has-validation">
-          <label for="productName">Product 's Media</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple={true}
-            // onChange={mediaChangeHandle}
-          />
-        </div>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          // onClick={handleSubmit}
-        >
-          Submit
-        </button>
       </div>
     </>
   );

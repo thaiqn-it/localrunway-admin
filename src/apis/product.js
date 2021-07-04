@@ -43,14 +43,8 @@ const deleteProductHashtag = (id, hashtagId) => {
   return defaultInstance.delete(`/products/${id}/hashtags/${hashtagId}`);
 };
 
-const postRootProduct = (name, description, price, categoryId, brandId) => {
-  return defaultInstance.post("/products/", {
-    name,
-    description,
-    price,
-    brandId,
-    categoryId,
-  });
+const addNewProduct = (product) => {
+  return defaultInstance.post("/products", { ...product });
 };
 export const productApis = {
   getListProductByBrand,
@@ -61,5 +55,5 @@ export const productApis = {
   getChildrenProducts,
   addProductHashtag,
   deleteProductHashtag,
-  postRootProduct,
+  addNewProduct,
 };

@@ -7,8 +7,10 @@ import AppContext from "../store/app-context";
 
 import classes from "./CreateProduct.module.css";
 import NewProductDetail from "./NewProductDetail";
-import NewGeneralProduct from "./NewGeneralProduct";
+import GeneralProduct from "./GeneralProduct";
 import CreateProductHashtag from "./CreateProductHashtag";
+import { localbrandsApis } from "../../apis/localbrands";
+import { useHistory } from "react-router-dom";
 
 export default function CreateProduct(props) {
   const newProductDetail = {
@@ -18,41 +20,65 @@ export default function CreateProduct(props) {
     price: "",
     thumbnail: "",
   };
+  const history = useHistory();
   const [productDetailList, setProductDetailList] = useState([]);
-  const handleDetail = (productDetail, index) => {
+  const handleDetailChange = (productDetail, index) => {
     const updatedProductDetailList = [...productDetailList];
-    updatedProductDetailList[index] = { productDetail };
+    updatedProductDetailList[index] = productDetail;
+    console.log(updatedProductDetailList);
     setProductDetailList(updatedProductDetailList);
   };
-  const handleDetailDelete = (index) => {
+  const handleDetailDelete = async (index) => {
     const productListDelete = [...productDetailList];
-
+    const product = productListDelete[index];
+    if (product._id != null) {
+      const res = await productApis.deleteProductById(product._id);
+      if (res.status === API_SUCCSES) {
+        console.log("delete succses");
+      }
+    }
     productListDelete.splice(index, 1);
     setProductDetailList(productListDelete);
   };
   const handleAddProductDetail = () => {
     setProductDetailList([...productDetailList, newProductDetail]);
   };
-  const submitError = {
-    productName: null,
-    description: null,
-    price: null,
-    categoryId: null,
-  };
+
   const [generalProduct, setGeneralProduct] = useState(null);
-  const [error, setError] = useState(submitError);
+
   const [showGeneralProductForm, setShowGeneralProductForm] = useState(true);
-  const [showDetailProduct, setShowDetailProduct] = useState(true);
+  const [showDetailProduct, setShowDetailProduct] = useState(false);
+  const [brandId, setBrandId] = useState(null);
+  const handleNewGeneralProductSubmit = (generalProduct) => {
+    setGeneralProduct(generalProduct);
+    setProductDetailList([newProductDetail]);
+    setShowGeneralProductForm(!showGeneralProductForm);
+    setShowDetailProduct(!showDetailProduct);
+  };
+  const handleCreateProduct = () => {
+    props.onGetProductId(generalProduct._id);
+    history.push("/home/productDetail");
+  };
+  const onInit = async () => {
+    const brandResponse = await localbrandsApis.getAuthInfo();
+    setBrandId(brandResponse.data._id);
+  };
+
+  useEffect(() => {
+    onInit();
+  }, []);
+
   const ProductDetailBox = () => {
     return (
       <>
         {productDetailList.map((item, i) => {
           return (
             <NewProductDetail
-              item={item}
+              productDetail={item}
               index={i}
-              handleDetail={handleDetail}
+              handleDetailChange={handleDetailChange}
               handleDetailDelete={handleDetailDelete}
+              generalProduct={generalProduct}
             />
           );
         })}
@@ -65,17 +91,7 @@ export default function CreateProduct(props) {
       <>
         <div className={classes.container}>
           <h1>Product Details</h1>
-          <div className="form-group has-validation">
-            <label for="productName">Color</label>
 
-            {error.productName != null ? (
-              <div id="validationServer03Feedback" class="invalid-feedback">
-                {error.productName}
-              </div>
-            ) : (
-              ""
-            )}
-          </div>
           {productDetailList.length > 0 && <ProductDetailBox />}
           <button
             type="submit"
@@ -87,9 +103,9 @@ export default function CreateProduct(props) {
           <button
             type="submit"
             class="btn btn-primary"
-            onClick={console.log("submit")}
+            onClick={handleCreateProduct}
           >
-            Submit
+            Create Product
           </button>
         </div>
       </>
@@ -98,9 +114,15 @@ export default function CreateProduct(props) {
   return (
     <>
       {showGeneralProductForm && (
-        <NewGeneralProduct setGeneralProduct={setGeneralProduct} />
+        <GeneralProduct
+          update={generalProduct != null}
+          handleNewProductSubmit={(generalProduct) =>
+            handleNewGeneralProductSubmit(generalProduct)
+          }
+          brandId={brandId}
+        />
       )}
-      {generalProduct == null && <CreateProductHashtag />}
+
       {showDetailProduct && <CreateDetailProdct />}
     </>
   );
