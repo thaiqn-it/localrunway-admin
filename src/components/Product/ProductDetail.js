@@ -366,9 +366,7 @@ const ProductDetail = (props) => {
         setMediaError(media);
       }
       if (name) {
-        let childMsg = childrenErrors;
-        childMsg += "name: " + name + "\n";
-        setChildrenErrors(childMsg);
+        setNameError(name);
       }
       if (price) {
         let childMsg = childrenErrors;

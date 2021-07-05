@@ -89,7 +89,7 @@ export default function ListProduct(props) {
 
   const updateProduct = (id) => {
     props.onGetProductId(id);
-    history.push("/home/productDetail");
+    history.replace("/home/productDetail");
   };
 
   return (
