@@ -1,21 +1,23 @@
-import React, { useEffect, Fragment, useState } from "react";
+import React, { Fragment, useState, useLayoutEffect } from "react";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Login.css";
-
-import { localbrandsApis } from "../../apis/localbrands";
 import { API_SUCCSES, JWT_TOKEN } from "../../constants";
+import { authService } from "../../service/auth";
+import { useHistory } from "react-router-dom";
 
 const Login = (props) => {
   //set page title
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = "Login Page";
   }, []);
 
+  const history = useHistory();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
+  const [authError, setAuthError] = useState(false);
+
   const usernameChangeHandler = (event) => {
     setUsername(event.target.value);
   };
@@ -24,20 +26,22 @@ const Login = (props) => {
     setPassword(event.target.value);
   };
 
-  const onSubmitHandler = (event) => {
+  const onSubmitHandler = async (event) => {
     event.preventDefault();
     setLoginError(false);
-    // api goes here
-    login(username, password);
+    setAuthError(false);
+    // login
+    await login(username, password);
   };
 
   const login = async (username, password) => {
     try {
-      const res = await localbrandsApis.login(username, password);
-
+      const res = await authService.login(username, password);
       if (res.status === API_SUCCSES) {
+        console.log(res.data.token);
         localStorage.setItem(JWT_TOKEN, res.data.token);
-        props.history.push("/main-page");
+        props.onLogin();
+        history.push("/home");
       }
     } catch (err) {
       setLoginError(true);
@@ -80,6 +84,13 @@ const Login = (props) => {
             ) : (
               ""
             )}
+            {authError ? (
+              <div className="alert alert-danger mt-2">
+                Server Error please try again
+              </div>
+            ) : (
+              ""
+            )}
             <div className="form-group">
               <div className="custom-control custom-checkbox">
                 <input
@@ -101,10 +112,10 @@ const Login = (props) => {
               Submit
             </button>
             <p className="forgot-password text-right">
-              Forgot <a href="#">password?</a>
+              Forgot <a href="">password?</a>
             </p>
-            <p class="text-center">Or Login with</p>
-            <p class="text-center">
+            <p className="text-center">Or Login with</p>
+            <p className="text-center">
               <FontAwesomeIcon
                 className="login-icon"
                 icon={["fab", "facebook"]}

@@ -1,0 +1,12 @@
+.side-nav-bar {
+  width: 10em;
+  max-width: 15em;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  padding-top: 5em;
+}
+.landing-wrapper {
+  display: flex;
+}
