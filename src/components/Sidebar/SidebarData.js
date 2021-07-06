@@ -5,6 +5,11 @@ export const SidebarData = [
     icon: "",
   },
   {
+    title: "Create Product",
+    path: "/main-page/create",
+    icon: "",
+  },
+  {
     title: "Orders",
     path: "/main-page/orders",
     icon: "",

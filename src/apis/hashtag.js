@@ -1,9 +1,13 @@
-import { defaultInstance } from "./index";
+import { defaultInstance } from ".";
 
-const addHashtag = (name) => {
-  return defaultInstance.post("/hashtags/", { name: name });
+const getAllHashtags = () => {
+  return defaultInstance.get("/hashtags");
 };
 
+const addHashtag = (name) => {
+  return defaultInstance.post("/hashtags", { name: name });
+};
 export const hashtagApis = {
-  addHashtag,
+  getAllHashtags,
+  postHashtag: addHashtag,
 };
