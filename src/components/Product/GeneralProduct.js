@@ -72,7 +72,6 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
       }
     } catch (err) {
       //handle error later
-      console.log(err.response);
     }
   };
 
@@ -120,17 +119,15 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
       brandId: brandId,
       categoryId: productCategoryId,
     };
-    console.log(generalProduct);
+
     try {
       const res = await productApis.addNewProduct(generalProduct);
       if (res.status === API_SUCCSES) {
-        console.log(res);
         generalProduct = res.data.product;
         createProductHashtags(generalProduct._id);
         handleNewProductSubmit(generalProduct);
       }
     } catch (err) {
-      console.log(err.response);
       if (err.response.status === API_BAD_REQUEST) {
         const errorParams = err.response.data.errorParams;
         setError(errorParams);
@@ -139,7 +136,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
   };
   const mediaFileInputHandler = async (event) => {
     const files = event.target.files;
-    console.log(files);
+
     let mediaUrls = [];
     for (const file of files) {
       const formdata = new FormData();
@@ -149,7 +146,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
         mediaUrls.push(res.data.publicUrl);
       } catch (err) {}
     }
-    console.log(mediaUrls);
+
     setMediaUrlList(mediaUrls);
     setThumbnailUrl(mediaUrls[0]);
   };
@@ -157,9 +154,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
     onInit();
   }, []);
 
-  useEffect(() => {
-    console.log(brandId);
-  }, [brandId]);
+  useEffect(() => {}, [brandId]);
 
   return (
     <>

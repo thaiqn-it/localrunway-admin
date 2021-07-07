@@ -32,7 +32,6 @@ export default function CreateProduct(props) {
   const handleDetailChange = (productDetail, index) => {
     const updatedProductDetailList = [...productDetailList];
     updatedProductDetailList[index] = productDetail;
-    console.log(updatedProductDetailList);
     setProductDetailList(updatedProductDetailList);
   };
 
@@ -67,7 +66,6 @@ export default function CreateProduct(props) {
     const detailList = [...productDetailList];
     if (checkNotSubmitedProduct(detailList)) {
       setSubmitError("There is a detail not submited");
-      console.log("not submited");
     } else {
       props.onGetProductId(generalProduct._id);
       history.push("/home/productDetail");

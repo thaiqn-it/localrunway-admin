@@ -87,7 +87,6 @@ export default function NewProductDetail({
       categoryId: generalProduct.categoryId,
       parentId: generalProduct._id,
     };
-    console.log(detail);
 
     try {
       const res = isUpdate
@@ -96,12 +95,12 @@ export default function NewProductDetail({
       if (res.status === API_SUCCSES) {
         detail = res.data.product;
         detail.mediaUrlList = mediaUrlList;
-        console.log(detail);
+
         handleDetailChange(detail, index);
       }
     } catch (err) {
       const errorParams = err.response.data.errorParams;
-      console.log(errorParams);
+
       setError(errorParams);
     }
   };
