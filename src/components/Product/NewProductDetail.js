@@ -7,6 +7,8 @@ import {
   PRODUCT_TYPE,
   STATUS_TYPE,
 } from "../../constants/control-default-value";
+import ServerError from "../UI/ServerError";
+import { useHistory } from "react-router-dom";
 
 export default function NewProductDetail({
   productDetail,
@@ -15,6 +17,7 @@ export default function NewProductDetail({
   handleDetailDelete,
   generalProduct,
 }) {
+  const history = useHistory();
   const [isUpdate, setIsUpdate] = useState(false);
   const [productId, setProductId] = useState();
   const [color, setColor] = useState();
@@ -24,6 +27,7 @@ export default function NewProductDetail({
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [mediaUrlList, setMediaUrlList] = useState([]);
   const [error, setError] = useState();
+  const [serverError, setServerError] = useState();
 
   const onInit = () => {
     if (productDetail._id != null) {
@@ -107,127 +111,159 @@ export default function NewProductDetail({
   const handleDelete = () => {
     handleDetailDelete(index);
   };
+  const handleImageDelete = (key) => {
+    const tmp = [...mediaUrlList];
+    tmp.splice(key, 1);
+    setMediaUrlList(tmp);
+    setThumbnailUrl(tmp[0]);
+  };
+  const handleServerError = (error) => {
+    setServerError(error);
+  };
 
   useEffect(() => {
     onInit();
   }, []);
   return (
-    <div>
-      <div className="form-row">
-        <div className="form-group col-md-1">
-          <label for="productName">Product Size</label>
-          <input
-            type="text"
-            className={error?.size ? "form-control is-invalid" : "form-control"}
-            id="size"
-            onChange={sizeChangeHandle}
-            placeholder=""
-            value={size}
-          />
-          {error?.size && (
-            <div id="validationServer03Feedback" class="invalid-feedback">
-              {error?.size}
-            </div>
-          )}
-        </div>
-        <div className="form-group has-validation col-md-1">
-          <label for="productColor">Product Color</label>
-          <input
-            type="text"
-            className={
-              error?.color ? "form-control is-invalid" : "form-control"
-            }
-            id="productColor"
-            onChange={colorChangeHandle}
-            placeholder=""
-            value={color}
-          />
-          {error?.color && (
-            <div id="validationServer03Feedback" class="invalid-feedback">
-              {error.color}
-            </div>
-          )}
-        </div>
-        <div className="form-group has-validation col-md-2">
-          <label for="productName">Product Quantity</label>
-          <input
-            type="text"
-            className={
-              error?.quantity ? "form-control is-invalid" : "form-control"
-            }
-            id="quantity"
-            onChange={quantityChangeHandle}
-            placeholder=""
-            value={quantity}
-          />
-          {error?.quantity && (
-            <div id="validationServer03Feedback" class="invalid-feedback">
-              {error.quantity}
-            </div>
-          )}
-        </div>
-        <div className="form-group has-validation col-md-2">
-          <label for="productName">Product Price</label>
-          <input
-            type="text"
-            className={
-              error?.price ? "form-control is-invalid" : "form-control"
-            }
-            id="price"
-            onChange={priceChangeHandle}
-            placeholder=""
-            value={price}
-          />
-          {error?.price && (
-            <div id="validationServer03Feedback" class="invalid-feedback">
-              {error.price}
-            </div>
-          )}
-        </div>
-        <div className="form-group has-validation col-md-2">
-          <label for="productName">Product Thumbnail</label>
-
-          <input
-            className={
-              error?.thumbnailUrl ? "form-control is-invalid" : "form-control"
-            }
-            type="file"
-            accept="image/*"
-            multiple={true}
-            onChange={thumbnailChangeHandle}
-          />
-          {error?.thumbnailUrl && (
-            <div id="validationServer03Feedback" class="invalid-feedback">
-              Please add at least 1 image
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="form-row">
-        {[...mediaUrlList].map((media) => {
-          return (
-            <img
-              className={classes.image_slide}
-              src={media.mediaUrl}
-              alt="mediaImg"
-            />
-          );
-        })}
-      </div>
-
-      <button type="submit" class="btn btn-dark" onClick={handleDelete}>
-        Delete
-      </button>
-      {!isUpdate && (
-        <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
-          Add Product
-        </button>
+    <>
+      {serverError && (
+        <ServerError
+          errorMsg={serverError}
+          onGoBack={() => history.push("/home")}
+        />
       )}
-      {isUpdate && (
-        <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
-          Update Product
-        </button>
+      {!serverError && (
+        <div>
+          <div className="form-row">
+            <div className="form-group col-md-1">
+              <label for="productName">Product Size</label>
+              <input
+                type="text"
+                className={
+                  error?.size ? "form-control is-invalid" : "form-control"
+                }
+                id="size"
+                onChange={sizeChangeHandle}
+                placeholder=""
+                value={size}
+              />
+              {error?.size && (
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                  {error?.size}
+                </div>
+              )}
+            </div>
+            <div className="form-group has-validation col-md-1">
+              <label for="productColor">Product Color</label>
+              <input
+                type="text"
+                className={
+                  error?.color ? "form-control is-invalid" : "form-control"
+                }
+                id="productColor"
+                onChange={colorChangeHandle}
+                placeholder=""
+                value={color}
+              />
+              {error?.color && (
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                  {error.color}
+                </div>
+              )}
+            </div>
+            <div className="form-group has-validation col-md-2">
+              <label for="productName">Product Quantity</label>
+              <input
+                type="text"
+                className={
+                  error?.quantity ? "form-control is-invalid" : "form-control"
+                }
+                id="quantity"
+                onChange={quantityChangeHandle}
+                placeholder=""
+                value={quantity}
+              />
+              {error?.quantity && (
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                  {error.quantity}
+                </div>
+              )}
+            </div>
+            <div className="form-group has-validation col-md-2">
+              <label for="productName">Product Price</label>
+              <input
+                type="text"
+                className={
+                  error?.price ? "form-control is-invalid" : "form-control"
+                }
+                id="price"
+                onChange={priceChangeHandle}
+                placeholder=""
+                value={price}
+              />
+              {error?.price && (
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                  {error.price}
+                </div>
+              )}
+            </div>
+            <div className="form-group has-validation col-md-2">
+              <label for="productName">Product Thumbnail</label>
+
+              <input
+                className={
+                  error?.thumbnailUrl
+                    ? "form-control is-invalid"
+                    : "form-control"
+                }
+                type="file"
+                accept="image/*"
+                multiple={true}
+                onChange={thumbnailChangeHandle}
+              />
+              {error?.thumbnailUrl && (
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                  Please add at least 1 image
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="form-row">
+            {mediaUrlList.map((item, key) => {
+              return (
+                <div className={classes.image_container}>
+                  <img
+                    src={item.mediaUrl}
+                    alt="mediaImg"
+                    className={classes.image}
+                  />
+                  <div
+                    className={classes.delete}
+                    type="button"
+                    onClick={() => handleImageDelete(key)}
+                  >
+                    x
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <button type="submit" class="btn btn-dark" onClick={handleDelete}>
+            Delete
+          </button>
+          {!isUpdate && (
+            <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
+              Add Product
+            </button>
+          )}
+          {isUpdate && (
+            <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
+              Update Product
+            </button>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 }

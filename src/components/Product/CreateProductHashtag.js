@@ -14,6 +14,7 @@ export default function CreateProductHashtag({
   prodcutHashtags,
   updateMode,
   handleHashtagsListChange,
+  handleServerError,
 }) {
   const submitError = {
     productName: null,
@@ -49,7 +50,9 @@ export default function CreateProductHashtag({
         hashtaglist.map((item, index) => (item.index = index));
         setHashtagSuggetionList(hashtaglist);
       }
-    } catch (err) {}
+    } catch (err) {
+      handleServerError(err.response.data.error);
+    }
   };
   const checkInputHashtagInSuggetionList = (hashtagName) => {
     let result = -1;
@@ -84,7 +87,7 @@ export default function CreateProductHashtag({
         return res.data.productHashtag._id;
       }
     } catch (err) {
-      console.log(err.respose);
+      handleServerError(err.response.data.error);
     }
   };
   const deleteProductHashTag = async (hashtagId) => {
@@ -96,7 +99,9 @@ export default function CreateProductHashtag({
       if (res === API_SUCCSES) {
         return res.data.productHashtag._id;
       }
-    } catch (err) {}
+    } catch (err) {
+      handleServerError(err.response.data.error);
+    }
   };
 
   const createHashtag = async (hashtagName) => {
@@ -105,7 +110,9 @@ export default function CreateProductHashtag({
       if (res.status === API_SUCCSES) {
         return res.data.hashtag;
       }
-    } catch (err) {}
+    } catch (err) {
+      handleServerError(err.response.data.error);
+    }
   };
   const handleHashTagSuggetionClickOutSide = (event) => {
     const { current: wrap } = suggetionWrapperRef;
