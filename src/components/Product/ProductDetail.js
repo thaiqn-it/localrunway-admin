@@ -44,6 +44,7 @@ const ProductDetail = (props) => {
   const [statusError, setStatusError] = useState();
   const [productTypeErros, setProductTypeErrors] = useState();
   const [childrenErrors, setChildrenErrors] = useState();
+  const [hashtagsError, setHashtagsError] = useState();
 
   const [isUpdate, setIsUpdate] = useState(false);
 
@@ -82,10 +83,7 @@ const ProductDetail = (props) => {
         tmp.push({ mediaUrl: publicUrl });
         setMediaUrl(tmp);
       } catch (err) {
-        const msg = err.response.data.errorParams;
-        let serverMsg = serverErros;
-        serverMsg += msg + "\n";
-        setServerErrors(serverMsg);
+        setMediaError("Server error, please try again");
       }
     }
   };
@@ -102,10 +100,7 @@ const ProductDetail = (props) => {
       tmp.splice(index, 1);
       setProductHashtags(tmp);
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setHashtagsError("Server error, please try again");
     }
   };
 
@@ -124,18 +119,14 @@ const ProductDetail = (props) => {
         const { _id } = resHashtag.data.hashtag;
         const generalProductId = generalProduct._id;
 
-        const resProductHashtag = await productApis.addProductHashtag(
-          generalProductId,
-          _id
-        );
+        await productApis.addProductHashtag(generalProductId, _id);
 
         //reset UI
         tmp.push({ id: _id, name: tagInput });
         setProductHashtags(tmp);
         setTagInput("");
       } catch (err) {
-        // const msg = err.response.data.errorParams;
-        console.log(err.response);
+        setHashtagsError("Server error, please try again");
       }
     }
   };
@@ -153,10 +144,7 @@ const ProductDetail = (props) => {
         setMedia(res.data.product.media);
       }
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setServerErrors("Server error, please try again");
     }
   };
 
@@ -193,10 +181,7 @@ const ProductDetail = (props) => {
       });
       setChildrenProducts(formattedProductList);
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setServerErrors("Server error, please try again");
     }
   };
 
@@ -205,10 +190,7 @@ const ProductDetail = (props) => {
       const res = await productApis.getProductHashtags(id);
       transformProductHashtags(res.data.hashtags);
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setHashtagsError("Server error, please try again");
     }
   };
 
@@ -221,10 +203,7 @@ const ProductDetail = (props) => {
         transformCategories(categories);
       }
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setServerErrors("Server error, please try again");
     }
   };
 
@@ -504,6 +483,7 @@ const ProductDetail = (props) => {
                 onKeyDown={(event) => addHashtagHandler(event)}
               />
             </div>
+            {hashtagsError && <ErrorFormInput errorMsg={hashtagsError} />}
           </div>
           <div className="form-group">
             <label htmlFor="formThumbnail">Product's Media Images</label>
