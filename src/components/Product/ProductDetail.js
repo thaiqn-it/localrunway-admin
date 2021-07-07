@@ -119,7 +119,7 @@ const ProductDetail = (props) => {
       const tmp = [...productHashtags];
       try {
         //add new hashtag
-        const resHashtag = await hashtagApis.addHashtag(tagInput);
+        const resHashtag = await hashtagApis.postHashtag(tagInput);
         //add new hashtag into product
         const { _id } = resHashtag.data.hashtag;
         const generalProductId = generalProduct._id;
@@ -134,10 +134,8 @@ const ProductDetail = (props) => {
         setProductHashtags(tmp);
         setTagInput("");
       } catch (err) {
-        const msg = err.response.data.errorParams;
-        let serverMsg = serverErros;
-        serverMsg += msg + "\n";
-        setServerErrors(serverMsg);
+        // const msg = err.response.data.errorParams;
+        console.log(err.response);
       }
     }
   };
