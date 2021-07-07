@@ -22,13 +22,14 @@ export default function NewProductDetail({
   const [quantity, setQuantity] = useState();
   const [price, setPrice] = useState();
   const [thumbnailUrl, setThumbnailUrl] = useState("");
-  const [mediaUrlList, setMediaUrlList] = useState();
+  const [mediaUrlList, setMediaUrlList] = useState([]);
   const [error, setError] = useState();
 
   const onInit = () => {
     if (productDetail._id != null) {
       setProductId(productDetail._id);
       setIsUpdate(true);
+      setMediaUrlList(productDetail.mediaUrlList);
     }
 
     setColor(productDetail.color);
@@ -60,7 +61,9 @@ export default function NewProductDetail({
       formdata.append("file", file);
       try {
         const res = await mediaApi.uploadFie(formdata);
-        mediaUrls.push({ mediaUrl: res.data.publicUrl, rank: 1 });
+        if (res.status === API_SUCCSES) {
+          mediaUrls.push({ mediaUrl: res.data.publicUrl, rank: 1 });
+        }
       } catch (err) {}
     }
     setThumbnailUrl(mediaUrls[0].mediaUrl);
@@ -84,6 +87,7 @@ export default function NewProductDetail({
       categoryId: generalProduct.categoryId,
       parentId: generalProduct._id,
     };
+    console.log(detail);
 
     try {
       const res = isUpdate
@@ -91,6 +95,7 @@ export default function NewProductDetail({
         : await productApis.addNewProduct(detail);
       if (res.status === API_SUCCSES) {
         detail = res.data.product;
+        detail.mediaUrlList = mediaUrlList;
         console.log(detail);
         handleDetailChange(detail, index);
       }
@@ -200,19 +205,27 @@ export default function NewProductDetail({
         </div>
       </div>
       <div className="form-row">
-        <img src={thumbnailUrl} />
+        {[...mediaUrlList].map((media) => {
+          return (
+            <img
+              className={classes.image_slide}
+              src={media.mediaUrl}
+              alt="mediaImg"
+            />
+          );
+        })}
       </div>
 
-      <button type="submit" class="btn btn-primary" onClick={handleDelete}>
+      <button type="submit" class="btn btn-dark" onClick={handleDelete}>
         Delete
       </button>
       {!isUpdate && (
-        <button type="submit" class="btn btn-primary" onClick={handleSubmit}>
+        <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
           Add Product
         </button>
       )}
       {isUpdate && (
-        <button type="submit" class="btn btn-primary" onClick={handleSubmit}>
+        <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
           Update Product
         </button>
       )}

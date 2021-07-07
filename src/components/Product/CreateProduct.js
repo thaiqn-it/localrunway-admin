@@ -22,12 +22,20 @@ export default function CreateProduct(props) {
   };
   const history = useHistory();
   const [productDetailList, setProductDetailList] = useState([]);
+  const [generalProduct, setGeneralProduct] = useState(null);
+
+  const [showGeneralProductForm, setShowGeneralProductForm] = useState(true);
+  const [showDetailProduct, setShowDetailProduct] = useState(false);
+  const [brandId, setBrandId] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
+
   const handleDetailChange = (productDetail, index) => {
     const updatedProductDetailList = [...productDetailList];
     updatedProductDetailList[index] = productDetail;
     console.log(updatedProductDetailList);
     setProductDetailList(updatedProductDetailList);
   };
+
   const handleDetailDelete = async (index) => {
     const productListDelete = [...productDetailList];
     const product = productListDelete[index];
@@ -44,20 +52,26 @@ export default function CreateProduct(props) {
     setProductDetailList([...productDetailList, newProductDetail]);
   };
 
-  const [generalProduct, setGeneralProduct] = useState(null);
-
-  const [showGeneralProductForm, setShowGeneralProductForm] = useState(true);
-  const [showDetailProduct, setShowDetailProduct] = useState(false);
-  const [brandId, setBrandId] = useState(null);
   const handleNewGeneralProductSubmit = (generalProduct) => {
     setGeneralProduct(generalProduct);
     setProductDetailList([newProductDetail]);
     setShowGeneralProductForm(!showGeneralProductForm);
     setShowDetailProduct(!showDetailProduct);
   };
+  const checkNotSubmitedProduct = (detailList) => {
+    return (
+      detailList.filter((productDetail) => productDetail._id == null).length > 0
+    );
+  };
   const handleCreateProduct = () => {
-    props.onGetProductId(generalProduct._id);
-    history.push("/home/productDetail");
+    const detailList = [...productDetailList];
+    if (checkNotSubmitedProduct(detailList)) {
+      setSubmitError("There is a detail not submited");
+      console.log("not submited");
+    } else {
+      props.onGetProductId(generalProduct._id);
+      history.push("/home/productDetail");
+    }
   };
   const onInit = async () => {
     const brandResponse = await localbrandsApis.getAuthInfo();
@@ -95,18 +109,25 @@ export default function CreateProduct(props) {
           {productDetailList.length > 0 && <ProductDetailBox />}
           <button
             type="submit"
-            class="btn btn-primary"
+            class="btn btn-dark"
             onClick={handleAddProductDetail}
           >
             Add Product Detail
           </button>
           <button
             type="submit"
-            class="btn btn-primary"
+            class="btn btn-dark"
             onClick={handleCreateProduct}
           >
             Create Product
           </button>
+          {submitError != null && (
+            <div className="form-row">
+              <div id="validation" class="alert alert-danger">
+                {submitError}
+              </div>
+            </div>
+          )}
         </div>
       </>
     );
