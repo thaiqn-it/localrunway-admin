@@ -2,7 +2,7 @@ import { faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { productApis } from "../../apis/product";
-import { API_SUCCSES, JWT_TOKEN, JWT_TOKEN_VALUE } from "../../constants";
+import { API_SUCCSES, PRODUCT_DETAIL_ID } from "../../constants";
 import { useHistory } from "react-router-dom";
 
 import classes from "./ListProduct.module.css";
@@ -89,6 +89,7 @@ export default function ListProduct(props) {
 
   const updateProduct = (id) => {
     props.onGetProductId(id);
+    localStorage.setItem(PRODUCT_DETAIL_ID, id);
     history.replace("/home/productDetail");
   };
 

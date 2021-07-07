@@ -39,3 +39,9 @@
   font-weight: bold;
   background-color: #a2b9bc;
 }
+
+.delete_icon {
+  position: absolute;
+  margin-left: 100px;
+  background-color: #fff;
+}

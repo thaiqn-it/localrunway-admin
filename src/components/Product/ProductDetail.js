@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import classes from "./ProductDetail.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../../../node_modules/jquery/dist/jquery.min.js";
 import { productApis } from "../../apis/product";
-import { API_SUCCSES } from "../../constants";
+import { API_SUCCSES, PRODUCT_DETAIL_ID } from "../../constants";
 import Select from "react-select";
 import { categoryApis } from "../../apis/category";
 import {
@@ -34,6 +36,7 @@ const ProductDetail = (props) => {
   const [mediaUrl, setMediaUrl] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesType, setCategoriesType] = useState([]);
+  const [thumbnaiGPlUrl, setThumbnaiGPlUrl] = useState();
 
   const [tagInput, setTagInput] = useState("");
 
@@ -82,10 +85,18 @@ const ProductDetail = (props) => {
         const tmp = [...mediaUrl];
         tmp.push({ mediaUrl: publicUrl });
         setMediaUrl(tmp);
+        setThumbnaiGPlUrl(tmp[0].mediaUrl);
       } catch (err) {
         setMediaError("Server error, please try again");
       }
     }
+  };
+
+  const deleteMediaImageHandler = (url) => {
+    const tmp = [...mediaUrl];
+    const index = tmp.findIndex((media) => media.mediaUrl === url);
+    tmp.splice(index, 1);
+    setMediaUrl([...tmp]);
   };
 
   const deleteHashtagHandler = async (id) => {
@@ -142,6 +153,7 @@ const ProductDetail = (props) => {
         setDescription(res.data.product.description);
         setCategoryId(res.data.product.categoryId);
         setMedia(res.data.product.media);
+        setThumbnaiGPlUrl(res.data.product.thumbnailUrl);
       }
     } catch (err) {
       setServerErrors("Server error, please try again");
@@ -215,7 +227,12 @@ const ProductDetail = (props) => {
         await getProductHashtags(productId);
         await getChildrenProducts(productId);
       } else {
-        history.push("/home/");
+        const prodId = localStorage.getItem(PRODUCT_DETAIL_ID);
+        setProductId(prodId);
+        await getExistingGeneralProduct(prodId);
+        await getCategory(prodId);
+        await getProductHashtags(prodId);
+        await getChildrenProducts(productId);
       }
     }
     initData();
@@ -282,6 +299,7 @@ const ProductDetail = (props) => {
 
   const submitHandler = async (ev) => {
     ev.preventDefault();
+    setChildrenErrors();
 
     //update newest state for GP
     const id = generalProduct._id;
@@ -294,7 +312,7 @@ const ProductDetail = (props) => {
       quantity: generalProduct.quantity,
       status: status,
       type: type,
-      thumbnailUrl: generalProduct.thumbnailUrl,
+      thumbnailUrl: thumbnaiGPlUrl,
       media: mediaUrl,
       description: description,
       brandId: generalProduct.brandId,
@@ -489,11 +507,20 @@ const ProductDetail = (props) => {
             <label htmlFor="formThumbnail">Product's Media Images</label>
             <div className="form-row">
               {mediaUrl.map((url) => (
-                <img
-                  className={classes.image_slide}
-                  src={url.mediaUrl}
-                  alt="media"
-                />
+                <div key={Math.random()}>
+                  <div className={classes.delete_icon}>
+                    <FontAwesomeIcon
+                      onClick={() => deleteMediaImageHandler(url.mediaUrl)}
+                      icon={faTimesCircle}
+                    />
+                  </div>
+
+                  <img
+                    className={classes.image_slide}
+                    src={url.mediaUrl}
+                    alt="media"
+                  />
+                </div>
               ))}
             </div>
             <div className="form-row">
@@ -508,6 +535,7 @@ const ProductDetail = (props) => {
               </div>
             </div>
           </div>
+
           <div className="form-group">
             {childrenProducts.map((product) => (
               <ProductDetailItem
