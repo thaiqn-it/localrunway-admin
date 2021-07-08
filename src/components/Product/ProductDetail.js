@@ -335,66 +335,69 @@ const ProductDetail = (props) => {
     const productsToUpdate = [updatedGeneralProduct, ...updatedChildren];
     try {
       for (let product of productsToUpdate) {
-        const res = await productApis.updateProductById(product._id, product);
+        await productApis.updateProductById(product._id, product);
       }
       setIsUpdate(true);
     } catch (error) {
-      const {
-        brandId,
-        color,
-        description,
-        media,
-        name,
-        price,
-        quantity,
-        size,
-        status,
-        thumbnailUrl,
-        type,
-      } = error.response.data.errorParams;
-
-      if (brandId) {
-        setServerErrors(brandId);
-      }
-      if (color) {
-        let childMsg = childrenErrors;
-        childMsg += "color: " + color + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (description) {
-        setDesError(description);
-      }
-      if (media) {
-        setMediaError(media);
-      }
-      if (name) {
-        setNameError(name);
-      }
-      if (price) {
-        let childMsg = childrenErrors;
-        childMsg += "price: " + price + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (quantity) {
-        let childMsg = childrenErrors;
-        childMsg += "quantity: " + quantity + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (size) {
-        let childMsg = childrenErrors;
-        childMsg += "size: " + size + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (status) {
-        setStatusError(status);
-      }
-      if (thumbnailUrl) {
-        let childMsg = childrenErrors;
-        childMsg += "thumbnail: " + thumbnailUrl + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (type) {
-        setProductTypeErrors(type);
+      // console.log(error.response.data.errorParams);
+      // setChildrenErrors(error.response.data.error);
+      if (error.response.data.errorParams) {
+        const {
+          brandId,
+          color,
+          description,
+          media,
+          name,
+          price,
+          quantity,
+          size,
+          status,
+          thumbnailUrl,
+          type,
+        } = error.response.data.errorParams;
+        if (brandId) {
+          setServerErrors(brandId);
+        }
+        if (color) {
+          let childMsg = childrenErrors;
+          childMsg += "color: " + color + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (description) {
+          setDesError(description);
+        }
+        if (media) {
+          setMediaError(media);
+        }
+        if (name) {
+          setNameError(name);
+        }
+        if (price) {
+          let childMsg = childrenErrors;
+          childMsg += "price: " + price + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (quantity) {
+          let childMsg = childrenErrors;
+          childMsg += "quantity: " + quantity + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (size) {
+          let childMsg = childrenErrors;
+          childMsg += "size: " + size + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (status) {
+          setStatusError(status);
+        }
+        if (thumbnailUrl) {
+          let childMsg = childrenErrors;
+          childMsg += "thumbnail: " + thumbnailUrl + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (type) {
+          setProductTypeErrors(type);
+        }
       }
     }
   };
