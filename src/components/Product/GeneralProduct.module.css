@@ -18,6 +18,7 @@
   height: 130px;
 }
 .image_container {
+  position: relative;
   width: 120px;
   display: flex;
   flex-direction: row !important;
