@@ -12,3 +12,35 @@
   margin-top: 5em;
   width: 100%;
 }
+.image {
+  margin-bottom: 5px;
+  width: 120px;
+  height: 130px;
+}
+.image_container {
+  position: relative;
+  width: 120px;
+  display: flex;
+  flex-direction: row !important;
+  justify-content: flex-start;
+  margin-right: 15px;
+  margin-bottom: 20px;
+  width: 120px;
+  height: 130px;
+}
+
+.image_container .delete {
+  background-color: red;
+
+  padding: 10px;
+  color: white;
+  display: none;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.image_container:hover .delete {
+  display: block;
+}
