@@ -75,21 +75,21 @@ const ProductDetail = (props) => {
     setMediaError();
     setMedia(event.target.files);
     const files = event.target.files;
-
+    const tmp = [...mediaUrl];
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
       try {
         const res = await mediaApi.uploadFie(formData);
         const { publicUrl } = res.data;
-        const tmp = [...mediaUrl];
+
         tmp.push({ mediaUrl: publicUrl });
-        setMediaUrl(tmp);
-        setThumbnaiGPlUrl(tmp[0].mediaUrl);
       } catch (err) {
         setMediaError("Please input an image");
       }
     }
+    setMediaUrl(tmp);
+    setThumbnaiGPlUrl(tmp[0].mediaUrl);
   };
 
   const deleteMediaImageHandler = (url) => {
