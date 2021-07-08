@@ -26,12 +26,18 @@
 
 .image_slide {
   display: flex;
-  flex-direction: row !important;
-  justify-content: flex-start;
+  flex-direction: row;
+  max-width: 1200px;
+  flex-wrap: wrap;
+}
+
+.image {
   margin-right: 15px;
   margin-bottom: 20px;
   width: 120px;
-  height: 130px;
+  height: 135px;
+  background-color: #f5f5f5;
+  flex: 1;
 }
 
 .info {
@@ -42,6 +48,10 @@
 
 .delete_icon {
   position: absolute;
-  margin-left: 100px;
-  color: aliceblue;
+  margin-left: 6.5em;
+  color: #f5f5f5;
+}
+
+.delete_icon:hover {
+  color: #a5a0a0;
 }
