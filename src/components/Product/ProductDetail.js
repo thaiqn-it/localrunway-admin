@@ -93,17 +93,24 @@ const ProductDetail = (props) => {
   };
 
   const deleteMediaImageHandler = (url) => {
-    const tmp = [...mediaUrl];
-    const index = tmp.findIndex((media) => media.mediaUrl === url);
-    tmp.splice(index, 1);
-    setMediaUrl([...tmp]);
+    if (mediaUrl.length > 0) {
+      const tmp = [...mediaUrl];
+      const index = tmp.findIndex((media) => media.mediaUrl === url);
+      if (index >= 0) {
+        tmp.splice(index, 1);
+        setMediaUrl([...tmp]);
+        if (tmp.length !== 0) {
+          setThumbnaiGPlUrl(tmp[0].mediaUrl);
+        }
+      }
+    }
   };
 
   const deleteHashtagHandler = async (id) => {
     try {
       //delete productHashtag
       const generalProductId = generalProduct._id;
-      const res = await productApis.deleteProductHashtag(generalProductId, id);
+      await productApis.deleteProductHashtag(generalProductId, id);
 
       // updateUI;
       const tmp = [...productHashtags];
