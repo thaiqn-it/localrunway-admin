@@ -87,7 +87,7 @@ const ProductDetail = (props) => {
         setMediaUrl(tmp);
         setThumbnaiGPlUrl(tmp[0].mediaUrl);
       } catch (err) {
-        setMediaError("Server error, please try again");
+        setMediaError("Please input an image");
       }
     }
   };
@@ -454,7 +454,6 @@ const ProductDetail = (props) => {
               {statusError && <ErrorFormInput errorMsg={statusError} />}
             </div>
           </div>
-
           <div className="form-row">
             <div className="form-group col-md-8">
               <label htmlFor="textareaDes">Description</label>
@@ -512,37 +511,33 @@ const ProductDetail = (props) => {
           </div>
           <div className="form-group">
             <label htmlFor="formThumbnail">Product's Media Images</label>
-            <div className="form-row">
-              {mediaUrl.map((url) => (
-                <div key={Math.random()}>
-                  <div className={classes.delete_icon}>
-                    <FontAwesomeIcon
-                      onClick={() => deleteMediaImageHandler(url.mediaUrl)}
-                      icon={faTimesCircle}
-                    />
-                  </div>
-
-                  <img
-                    className={classes.image_slide}
-                    src={url.mediaUrl}
-                    alt="media"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple={true}
-                  onChange={mediaFileInputHandler}
-                />
-                {mediaError && <ErrorFormInput errorMsg={mediaError} />}
-              </div>
-            </div>
           </div>
 
+          <div className={classes.image_slide}>
+            {mediaUrl.map((url) => (
+              <div key={Math.random()}>
+                <div className={classes.delete_icon}>
+                  <FontAwesomeIcon
+                    onClick={() => deleteMediaImageHandler(url.mediaUrl)}
+                    icon={faTimesCircle}
+                  />
+                </div>
+                <img className={classes.image} src={url.mediaUrl} alt="media" />
+              </div>
+            ))}
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <input
+                type="file"
+                accept="image/*"
+                multiple={true}
+                onChange={mediaFileInputHandler}
+              />
+              {mediaError && <ErrorFormInput errorMsg={mediaError} />}
+            </div>
+          </div>
           <div className="form-group">
             {childrenProducts.map((product) => (
               <ProductDetailItem
@@ -556,7 +551,6 @@ const ProductDetail = (props) => {
               />
             ))}
           </div>
-
           <div className="form-group">
             {childrenErrors && <ErrorFormInput errorMsg={childrenErrors} />}
           </div>
@@ -581,7 +575,6 @@ const ProductDetail = (props) => {
               </div>
             </div>
           )}
-
           {!isUpdate && (
             <div className="form-group">
               <button
