@@ -34,6 +34,7 @@ export default function NewProductDetail({
     if (productDetail._id != null) {
       setProductId(productDetail._id);
       setIsUpdate(true);
+      setThumbnailUrl(productDetail.thumbnailUrl);
     }
 
     setColor(productDetail.color);
@@ -69,9 +70,6 @@ export default function NewProductDetail({
     } catch (err) {
       handleServerError(error.response.data.error);
     }
-
-    // setThumbnailUrl(mediaUrls[0].mediaUrl);
-    // setMediaUrlList(mediaUrls);
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
