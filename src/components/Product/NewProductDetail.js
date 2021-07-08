@@ -243,13 +243,15 @@ export default function NewProductDetail({
             )}
           </div>
 
-          <button type="submit" class="btn btn-dark" onClick={handleDelete}>
-            Delete
-          </button>
           {!isUpdate && (
-            <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
-              Add Product
-            </button>
+            <div>
+              <button type="submit" class="btn btn-dark" onClick={handleDelete}>
+                Delete
+              </button>
+              <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
+                Add Product
+              </button>
+            </div>
           )}
           {isUpdate && (
             <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
