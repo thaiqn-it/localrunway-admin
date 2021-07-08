@@ -9,6 +9,7 @@ import {
 } from "../../constants/control-default-value";
 import ServerError from "../UI/ServerError";
 import { useHistory } from "react-router-dom";
+import { event } from "jquery";
 
 export default function NewProductDetail({
   productDetail,
@@ -25,7 +26,7 @@ export default function NewProductDetail({
   const [quantity, setQuantity] = useState();
   const [price, setPrice] = useState();
   const [thumbnailUrl, setThumbnailUrl] = useState("");
-  const [mediaUrlList, setMediaUrlList] = useState([]);
+
   const [error, setError] = useState();
   const [serverError, setServerError] = useState();
 
@@ -33,14 +34,12 @@ export default function NewProductDetail({
     if (productDetail._id != null) {
       setProductId(productDetail._id);
       setIsUpdate(true);
-      setMediaUrlList(productDetail.mediaUrlList);
     }
 
     setColor(productDetail.color);
     setSize(productDetail.size);
     setQuantity(productDetail.quantity);
     setPrice(productDetail.price);
-    setThumbnailUrl(productDetail.thumbnailUrl);
   };
   const colorChangeHandle = (event) => {
     setColor(event.target.value);
@@ -57,21 +56,22 @@ export default function NewProductDetail({
     setQuantity(event.target.value);
   };
 
-  const thumbnailChangeHandle = async (event) => {
-    const files = event.target.files;
-    let mediaUrls = [];
-    for (const file of files) {
-      const formdata = new FormData();
-      formdata.append("file", file);
-      try {
-        const res = await mediaApi.uploadFie(formdata);
-        if (res.status === API_SUCCSES) {
-          mediaUrls.push({ mediaUrl: res.data.publicUrl, rank: 1 });
-        }
-      } catch (err) {}
+  const thumbnailChangeHandle = async (file) => {
+    const formdata = new FormData();
+    formdata.append("file", file);
+    try {
+      const res = await mediaApi.uploadFie(formdata);
+      if (res.status === API_SUCCSES) {
+        const thumbnailUrl = res.data.publicUrl;
+
+        setThumbnailUrl(thumbnailUrl);
+      }
+    } catch (err) {
+      handleServerError(error.response.data.error);
     }
-    setThumbnailUrl(mediaUrls[0].mediaUrl);
-    setMediaUrlList(mediaUrls);
+
+    // setThumbnailUrl(mediaUrls[0].mediaUrl);
+    // setMediaUrlList(mediaUrls);
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -86,7 +86,7 @@ export default function NewProductDetail({
       type: "DP",
       description: generalProduct.description,
       thumbnailUrl: thumbnailUrl,
-      media: mediaUrlList,
+      media: generalProduct.media,
       brandId: generalProduct.brandId,
       categoryId: generalProduct.categoryId,
       parentId: generalProduct._id,
@@ -98,7 +98,6 @@ export default function NewProductDetail({
         : await productApis.addNewProduct(detail);
       if (res.status === API_SUCCSES) {
         detail = res.data.product;
-        detail.mediaUrlList = mediaUrlList;
 
         handleDetailChange(detail, index);
       }
@@ -111,11 +110,8 @@ export default function NewProductDetail({
   const handleDelete = () => {
     handleDetailDelete(index);
   };
-  const handleImageDelete = (key) => {
-    const tmp = [...mediaUrlList];
-    tmp.splice(key, 1);
-    setMediaUrlList(tmp);
-    setThumbnailUrl(tmp[0]);
+  const handleImageDelete = () => {
+    setThumbnailUrl();
   };
   const handleServerError = (error) => {
     setServerError(error);
@@ -124,6 +120,7 @@ export default function NewProductDetail({
   useEffect(() => {
     onInit();
   }, []);
+
   return (
     <>
       {serverError && (
@@ -218,8 +215,9 @@ export default function NewProductDetail({
                 }
                 type="file"
                 accept="image/*"
-                multiple={true}
-                onChange={thumbnailChangeHandle}
+                onChange={(event) => {
+                  thumbnailChangeHandle(event.target.files[0]);
+                }}
               />
               {error?.thumbnailUrl && (
                 <div id="validationServer03Feedback" class="invalid-feedback">
@@ -229,24 +227,22 @@ export default function NewProductDetail({
             </div>
           </div>
           <div className="form-row">
-            {mediaUrlList.map((item, key) => {
-              return (
-                <div className={classes.image_container}>
-                  <img
-                    src={item.mediaUrl}
-                    alt="mediaImg"
-                    className={classes.image}
-                  />
-                  <div
-                    className={classes.delete}
-                    type="button"
-                    onClick={() => handleImageDelete(key)}
-                  >
-                    x
-                  </div>
+            {thumbnailUrl && (
+              <div className={classes.image_container}>
+                <img
+                  src={thumbnailUrl}
+                  alt="mediaImg"
+                  className={classes.image}
+                />
+                <div
+                  className={classes.delete}
+                  type="button"
+                  onClick={() => handleImageDelete()}
+                >
+                  x
                 </div>
-              );
-            })}
+              </div>
+            )}
           </div>
 
           <button type="submit" class="btn btn-dark" onClick={handleDelete}>

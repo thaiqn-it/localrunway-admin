@@ -41,7 +41,6 @@ export default function CreateProduct(props) {
     if (product._id != null) {
       const res = await productApis.deleteProductById(product._id);
       if (res.status === API_SUCCSES) {
-        console.log("delete succses");
       }
     }
     productListDelete.splice(index, 1);

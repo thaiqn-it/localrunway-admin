@@ -130,6 +130,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
       const res = await productApis.addNewProduct(generalProduct);
       if (res.status === API_SUCCSES) {
         generalProduct = res.data.product;
+        generalProduct.media = mediaUrlList;
         createProductHashtags(generalProduct._id);
         handleNewProductSubmit(generalProduct);
       }
@@ -163,7 +164,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
     );
     const tmp = [...mediaUrlList];
     tmp.push(...mediaUrls);
-    console.log(tmp);
+
     setMediaUrlList(tmp);
     setThumbnailUrl(tmp[0].mediaUrl);
   };
