@@ -91,18 +91,6 @@ const Login = (props) => {
             ) : (
               ""
             )}
-            <div className="form-group">
-              <div className="custom-control custom-checkbox">
-                <input
-                  type="checkbox"
-                  className="custom-control-input"
-                  id="customCheck1"
-                />
-                <label className="custom-control-label" htmlFor="customCheck1">
-                  Remember me
-                </label>
-              </div>
-            </div>
 
             <button
               type="submit"
@@ -111,16 +99,6 @@ const Login = (props) => {
             >
               Submit
             </button>
-            <p className="forgot-password text-right">
-              Forgot <a href="">password?</a>
-            </p>
-            <p className="text-center">Or Login with</p>
-            <p className="text-center">
-              <FontAwesomeIcon
-                className="login-icon"
-                icon={["fab", "facebook"]}
-              />
-            </p>
           </form>
         </div>
       </div>

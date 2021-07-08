@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import classes from "./ProductDetail.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../../../node_modules/jquery/dist/jquery.min.js";
 import { productApis } from "../../apis/product";
-import { API_SUCCSES } from "../../constants";
+import { API_SUCCSES, PRODUCT_DETAIL_ID } from "../../constants";
 import Select from "react-select";
 import { categoryApis } from "../../apis/category";
 import {
@@ -34,6 +36,7 @@ const ProductDetail = (props) => {
   const [mediaUrl, setMediaUrl] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesType, setCategoriesType] = useState([]);
+  const [thumbnaiGPlUrl, setThumbnaiGPlUrl] = useState();
 
   const [tagInput, setTagInput] = useState("");
 
@@ -44,6 +47,7 @@ const ProductDetail = (props) => {
   const [statusError, setStatusError] = useState();
   const [productTypeErros, setProductTypeErrors] = useState();
   const [childrenErrors, setChildrenErrors] = useState();
+  const [hashtagsError, setHashtagsError] = useState();
 
   const [isUpdate, setIsUpdate] = useState(false);
 
@@ -71,21 +75,33 @@ const ProductDetail = (props) => {
     setMediaError();
     setMedia(event.target.files);
     const files = event.target.files;
-
+    const tmp = [...mediaUrl];
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
       try {
         const res = await mediaApi.uploadFie(formData);
         const { publicUrl } = res.data;
-        const tmp = [...mediaUrl];
+
         tmp.push({ mediaUrl: publicUrl });
-        setMediaUrl(tmp);
       } catch (err) {
-        const msg = err.response.data.errorParams;
-        let serverMsg = serverErros;
-        serverMsg += msg + "\n";
-        setServerErrors(serverMsg);
+        setMediaError("Please input an image");
+      }
+    }
+    setMediaUrl(tmp);
+    setThumbnaiGPlUrl(tmp[0].mediaUrl);
+  };
+
+  const deleteMediaImageHandler = (url) => {
+    if (mediaUrl.length > 0) {
+      const tmp = [...mediaUrl];
+      const index = tmp.findIndex((media) => media.mediaUrl === url);
+      if (index >= 0) {
+        tmp.splice(index, 1);
+        setMediaUrl([...tmp]);
+        if (tmp.length !== 0) {
+          setThumbnaiGPlUrl(tmp[0].mediaUrl);
+        }
       }
     }
   };
@@ -94,7 +110,7 @@ const ProductDetail = (props) => {
     try {
       //delete productHashtag
       const generalProductId = generalProduct._id;
-      const res = await productApis.deleteProductHashtag(generalProductId, id);
+      await productApis.deleteProductHashtag(generalProductId, id);
 
       // updateUI;
       const tmp = [...productHashtags];
@@ -102,10 +118,7 @@ const ProductDetail = (props) => {
       tmp.splice(index, 1);
       setProductHashtags(tmp);
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setHashtagsError("Server error, please try again");
     }
   };
 
@@ -119,25 +132,19 @@ const ProductDetail = (props) => {
       const tmp = [...productHashtags];
       try {
         //add new hashtag
-        const resHashtag = await hashtagApis.addHashtag(tagInput);
+        const resHashtag = await hashtagApis.postHashtag(tagInput);
         //add new hashtag into product
         const { _id } = resHashtag.data.hashtag;
         const generalProductId = generalProduct._id;
 
-        const resProductHashtag = await productApis.addProductHashtag(
-          generalProductId,
-          _id
-        );
+        await productApis.addProductHashtag(generalProductId, _id);
 
         //reset UI
         tmp.push({ id: _id, name: tagInput });
         setProductHashtags(tmp);
         setTagInput("");
       } catch (err) {
-        const msg = err.response.data.errorParams;
-        let serverMsg = serverErros;
-        serverMsg += msg + "\n";
-        setServerErrors(serverMsg);
+        setHashtagsError("Server error, please try again");
       }
     }
   };
@@ -153,12 +160,10 @@ const ProductDetail = (props) => {
         setDescription(res.data.product.description);
         setCategoryId(res.data.product.categoryId);
         setMedia(res.data.product.media);
+        setThumbnaiGPlUrl(res.data.product.thumbnailUrl);
       }
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setServerErrors("Server error, please try again");
     }
   };
 
@@ -195,10 +200,7 @@ const ProductDetail = (props) => {
       });
       setChildrenProducts(formattedProductList);
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setServerErrors("Server error, please try again");
     }
   };
 
@@ -207,10 +209,7 @@ const ProductDetail = (props) => {
       const res = await productApis.getProductHashtags(id);
       transformProductHashtags(res.data.hashtags);
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setHashtagsError("Server error, please try again");
     }
   };
 
@@ -223,10 +222,7 @@ const ProductDetail = (props) => {
         transformCategories(categories);
       }
     } catch (err) {
-      const msg = err.response.data.errorParams;
-      let serverMsg = serverErros;
-      serverMsg += msg + "\n";
-      setServerErrors(serverMsg);
+      setServerErrors("Server error, please try again");
     }
   };
 
@@ -238,7 +234,12 @@ const ProductDetail = (props) => {
         await getProductHashtags(productId);
         await getChildrenProducts(productId);
       } else {
-        history.push("/home/");
+        const prodId = localStorage.getItem(PRODUCT_DETAIL_ID);
+        setProductId(prodId);
+        await getExistingGeneralProduct(prodId);
+        await getCategory(prodId);
+        await getProductHashtags(prodId);
+        await getChildrenProducts(productId);
       }
     }
     initData();
@@ -305,6 +306,7 @@ const ProductDetail = (props) => {
 
   const submitHandler = async (ev) => {
     ev.preventDefault();
+    setChildrenErrors();
 
     //update newest state for GP
     const id = generalProduct._id;
@@ -317,7 +319,7 @@ const ProductDetail = (props) => {
       quantity: generalProduct.quantity,
       status: status,
       type: type,
-      thumbnailUrl: generalProduct.thumbnailUrl,
+      thumbnailUrl: thumbnaiGPlUrl,
       media: mediaUrl,
       description: description,
       brandId: generalProduct.brandId,
@@ -333,66 +335,69 @@ const ProductDetail = (props) => {
     const productsToUpdate = [updatedGeneralProduct, ...updatedChildren];
     try {
       for (let product of productsToUpdate) {
-        const res = await productApis.updateProductById(product._id, product);
+        await productApis.updateProductById(product._id, product);
       }
       setIsUpdate(true);
     } catch (error) {
-      const {
-        brandId,
-        color,
-        description,
-        media,
-        name,
-        price,
-        quantity,
-        size,
-        status,
-        thumbnailUrl,
-        type,
-      } = error.response.data.errorParams;
-
-      if (brandId) {
-        setServerErrors(brandId);
-      }
-      if (color) {
-        let childMsg = childrenErrors;
-        childMsg += "color: " + color + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (description) {
-        setDesError(description);
-      }
-      if (media) {
-        setMediaError(media);
-      }
-      if (name) {
-        setNameError(name);
-      }
-      if (price) {
-        let childMsg = childrenErrors;
-        childMsg += "price: " + price + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (quantity) {
-        let childMsg = childrenErrors;
-        childMsg += "quantity: " + quantity + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (size) {
-        let childMsg = childrenErrors;
-        childMsg += "size: " + size + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (status) {
-        setStatusError(status);
-      }
-      if (thumbnailUrl) {
-        let childMsg = childrenErrors;
-        childMsg += "thumbnail: " + thumbnailUrl + "\n";
-        setChildrenErrors(childMsg);
-      }
-      if (type) {
-        setProductTypeErrors(type);
+      // console.log(error.response.data.errorParams);
+      // setChildrenErrors(error.response.data.error);
+      if (error.response.data.errorParams) {
+        const {
+          brandId,
+          color,
+          description,
+          media,
+          name,
+          price,
+          quantity,
+          size,
+          status,
+          thumbnailUrl,
+          type,
+        } = error.response.data.errorParams;
+        if (brandId) {
+          setServerErrors(brandId);
+        }
+        if (color) {
+          let childMsg = childrenErrors;
+          childMsg += "color: " + color + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (description) {
+          setDesError(description);
+        }
+        if (media) {
+          setMediaError(media);
+        }
+        if (name) {
+          setNameError(name);
+        }
+        if (price) {
+          let childMsg = childrenErrors;
+          childMsg += "price: " + price + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (quantity) {
+          let childMsg = childrenErrors;
+          childMsg += "quantity: " + quantity + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (size) {
+          let childMsg = childrenErrors;
+          childMsg += "size: " + size + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (status) {
+          setStatusError(status);
+        }
+        if (thumbnailUrl) {
+          let childMsg = childrenErrors;
+          childMsg += "thumbnail: " + thumbnailUrl + "\n";
+          setChildrenErrors(childMsg);
+        }
+        if (type) {
+          setProductTypeErrors(type);
+        }
       }
     }
   };
@@ -452,7 +457,6 @@ const ProductDetail = (props) => {
               {statusError && <ErrorFormInput errorMsg={statusError} />}
             </div>
           </div>
-
           <div className="form-row">
             <div className="form-group col-md-8">
               <label htmlFor="textareaDes">Description</label>
@@ -506,28 +510,35 @@ const ProductDetail = (props) => {
                 onKeyDown={(event) => addHashtagHandler(event)}
               />
             </div>
+            {hashtagsError && <ErrorFormInput errorMsg={hashtagsError} />}
           </div>
           <div className="form-group">
             <label htmlFor="formThumbnail">Product's Media Images</label>
-            <div className="form-row">
-              {mediaUrl.map((url) => (
-                <img
-                  className={classes.image_slide}
-                  src={url.mediaUrl}
-                  alt="media"
-                />
-              ))}
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple={true}
-                  onChange={mediaFileInputHandler}
-                />
-                {mediaError && <ErrorFormInput errorMsg={mediaError} />}
+          </div>
+
+          <div className={classes.image_slide}>
+            {mediaUrl.map((url) => (
+              <div key={Math.random()}>
+                <div className={classes.delete_icon}>
+                  <FontAwesomeIcon
+                    onClick={() => deleteMediaImageHandler(url.mediaUrl)}
+                    icon={faTimesCircle}
+                  />
+                </div>
+                <img className={classes.image} src={url.mediaUrl} alt="media" />
               </div>
+            ))}
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <input
+                type="file"
+                accept="image/*"
+                multiple={true}
+                onChange={mediaFileInputHandler}
+              />
+              {mediaError && <ErrorFormInput errorMsg={mediaError} />}
             </div>
           </div>
           <div className="form-group">
@@ -543,7 +554,6 @@ const ProductDetail = (props) => {
               />
             ))}
           </div>
-
           <div className="form-group">
             {childrenErrors && <ErrorFormInput errorMsg={childrenErrors} />}
           </div>
@@ -568,7 +578,6 @@ const ProductDetail = (props) => {
               </div>
             </div>
           )}
-
           {!isUpdate && (
             <div className="form-group">
               <button

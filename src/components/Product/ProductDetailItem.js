@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { mediaApi } from "../../apis/media";
+import ErrorFormInput from "../UI/ErrorFormInput";
 import classes from "./ProductDetailItem.module.css";
 
 const ProductDetailItem = (props) => {
@@ -15,6 +16,8 @@ const ProductDetailItem = (props) => {
   const [quantity, setQuantity] = useState(0);
   const [thumbnailItem, setThumbnailItem] = useState("");
   const [productId, setProductId] = useState("");
+
+  const [thumbnailError, setThumbnailError] = useState();
 
   const initData = () => {
     const product = props.product;
@@ -58,6 +61,7 @@ const ProductDetailItem = (props) => {
   }, [size, color, quantity, price, thumbnailItem]);
 
   const thumbnailInputHandler = async (file) => {
+    setThumbnailError();
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -65,7 +69,9 @@ const ProductDetailItem = (props) => {
       const { publicUrl } = res.data;
       setThumbnailItem(publicUrl);
     } catch (err) {
-      console.log(err.response.data);
+      const msg = err.response.data.errorParams;
+      const serverMsg = msg;
+      setThumbnailError(serverMsg);
     }
   };
 
@@ -148,6 +154,7 @@ const ProductDetailItem = (props) => {
               }}
             />
           </div>
+          {thumbnailError && <ErrorFormInput errorMsg={thumbnailError} />}
         </div>
       </div>
     </>

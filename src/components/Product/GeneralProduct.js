@@ -5,7 +5,7 @@ import { productApis } from "../../apis/product";
 import { API_BAD_REQUEST, API_SUCCSES } from "../../constants";
 import AppContext from "../store/app-context";
 import { mediaApi } from "../../apis/media";
-import classes from "./CreateProduct.module.css";
+import classes from "./GeneralProduct.module.css";
 import { hashtagsApis } from "../../apis/hashtag";
 import CreateProductHashtag from "./CreateProductHashtag";
 import { productHashtagApi } from "../../apis/productHastag";
@@ -72,7 +72,6 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
       }
     } catch (err) {
       //handle error later
-      console.log(err.response);
     }
   };
 
@@ -102,8 +101,6 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
     let productCategoryId = haveNewCategory
       ? await createNewcategory()
       : categoryId;
-
-    console.log("Submit");
     const media = [...mediaUrlList].map(
       (media) => (media = { mediaUrl: media, rank: 1 })
     );
@@ -122,23 +119,24 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
       brandId: brandId,
       categoryId: productCategoryId,
     };
-    console.log(generalProduct);
+
     try {
       const res = await productApis.addNewProduct(generalProduct);
       if (res.status === API_SUCCSES) {
-        console.log(res);
         generalProduct = res.data.product;
         createProductHashtags(generalProduct._id);
         handleNewProductSubmit(generalProduct);
       }
     } catch (err) {
-      console.log(err.response);
-      const errorParams = err.response.data.errorParams;
-      setError(errorParams);
+      if (err.response.status === API_BAD_REQUEST) {
+        const errorParams = err.response.data.errorParams;
+        setError(errorParams);
+      }
     }
   };
   const mediaFileInputHandler = async (event) => {
     const files = event.target.files;
+
     let mediaUrls = [];
     for (const file of files) {
       const formdata = new FormData();
@@ -148,6 +146,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
         mediaUrls.push(res.data.publicUrl);
       } catch (err) {}
     }
+
     setMediaUrlList(mediaUrls);
     setThumbnailUrl(mediaUrls[0]);
   };
@@ -155,9 +154,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
     onInit();
   }, []);
 
-  useEffect(() => {
-    console.log(brandId);
-  }, [brandId]);
+  useEffect(() => {}, [brandId]);
 
   return (
     <>
@@ -264,9 +261,17 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
             )}
           </div>
           <div className="form-row">
-            <img src={thumbnailUrl} />
+            {mediaUrlList.map((mediaUrl) => {
+              return (
+                <img
+                  className={classes.image_slide}
+                  src={mediaUrl}
+                  alt="mediaImg"
+                />
+              );
+            })}
           </div>
-          <button type="submit" class="btn btn-primary" onClick={handleSubmit}>
+          <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
             Next
           </button>
         </form>

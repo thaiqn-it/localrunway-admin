@@ -1,0 +1,9 @@
+.image_slide {
+  display: flex;
+  flex-direction: row !important;
+  justify-content: flex-start;
+  margin-right: 15px;
+  margin-bottom: 20px;
+  width: 120px;
+  height: 130px;
+}
