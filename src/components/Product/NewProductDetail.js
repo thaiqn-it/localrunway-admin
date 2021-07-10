@@ -9,7 +9,8 @@ import {
 } from "../../constants/control-default-value";
 import ServerError from "../UI/ServerError";
 import { useHistory } from "react-router-dom";
-import { event } from "jquery";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewProductDetail({
   productDetail,
@@ -169,7 +170,7 @@ export default function NewProductDetail({
             <div className="form-group has-validation col-md-2">
               <label for="productName">Product Quantity</label>
               <input
-                type="text"
+                type="number"
                 className={
                   error?.quantity ? "form-control is-invalid" : "form-control"
                 }
@@ -187,7 +188,7 @@ export default function NewProductDetail({
             <div className="form-group has-validation col-md-2">
               <label for="productName">Product Price</label>
               <input
-                type="text"
+                type="number"
                 className={
                   error?.price ? "form-control is-invalid" : "form-control"
                 }
@@ -232,12 +233,11 @@ export default function NewProductDetail({
                   alt="mediaImg"
                   className={classes.image}
                 />
-                <div
-                  className={classes.delete}
-                  type="button"
-                  onClick={() => handleImageDelete()}
-                >
-                  x
+                <div className={classes.delete_icon}>
+                  <FontAwesomeIcon
+                    onClick={() => handleImageDelete()}
+                    icon={faTimesCircle}
+                  />
                 </div>
               </div>
             )}

@@ -12,6 +12,9 @@ import { productHashtagApi } from "../../apis/productHastag";
 import { localbrandsApis } from "../../apis/localbrands";
 import ServerError from "../UI/ServerError";
 import { useHistory } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+
 export default function GeneralProduct({ update, handleNewProductSubmit }) {
   const history = useHistory();
   const productStatus = { active: "ACTIVE", inactive: "INACTIVE" };
@@ -173,7 +176,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
     const tmp = [...mediaUrlList];
     tmp.splice(key, 1);
     setMediaUrlList(tmp);
-    setThumbnailUrl(tmp[0].mediaUrl);
+    setThumbnailUrl(tmp[0]?.mediaUrl);
   };
 
   const handleServerError = (errorMsg) => {
@@ -308,12 +311,11 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
                       alt="mediaImg"
                       className={classes.image}
                     />
-                    <div
-                      className={classes.delete}
-                      type="button"
-                      onClick={() => handleImageDelete(key)}
-                    >
-                      x
+                    <div className={classes.delete_icon}>
+                      <FontAwesomeIcon
+                        onClick={() => handleImageDelete()}
+                        icon={faTimesCircle}
+                      />
                     </div>
                   </div>
                 );
