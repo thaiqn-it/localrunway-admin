@@ -39,3 +39,13 @@
 .image_container:hover .delete {
   display: block;
 }
+
+.delete_icon {
+  position: absolute;
+  margin-left: 6.5em;
+  color: #f5f5f5;
+}
+
+.delete_icon:hover {
+  color: #a5a0a0;
+}
