@@ -313,7 +313,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
                     />
                     <div className={classes.delete_icon}>
                       <FontAwesomeIcon
-                        onClick={() => handleImageDelete()}
+                        onClick={() => handleImageDelete(key)}
                         icon={faTimesCircle}
                       />
                     </div>
