@@ -24,6 +24,7 @@ export default function CreateProductHashtag({
     hashtags: null,
   };
 
+  const serverErrorMsg = "Server is not response";
   const [hashtagSuggetionList, setHashtagSuggetionList] = useState([]);
   const [hashtags, setHashtags] = useState([]);
   const [tagInput, setTagInput] = useState("");
@@ -51,7 +52,7 @@ export default function CreateProductHashtag({
         setHashtagSuggetionList(hashtaglist);
       }
     } catch (err) {
-      handleServerError(err.response.data.error);
+      handleServerError(serverErrorMsg);
     }
   };
   const checkInputHashtagInSuggetionList = (hashtagName) => {
@@ -87,7 +88,7 @@ export default function CreateProductHashtag({
         return res.data.productHashtag._id;
       }
     } catch (err) {
-      handleServerError(err.response.data.error);
+      handleServerError(serverErrorMsg);
     }
   };
   const deleteProductHashTag = async (hashtagId) => {
@@ -100,7 +101,7 @@ export default function CreateProductHashtag({
         return res.data.productHashtag._id;
       }
     } catch (err) {
-      handleServerError(err.response.data.error);
+      handleServerError(serverErrorMsg);
     }
   };
 
@@ -111,7 +112,7 @@ export default function CreateProductHashtag({
         return res.data.hashtag;
       }
     } catch (err) {
-      handleServerError(err.response.data.error);
+      handleServerError(serverErrorMsg);
     }
   };
   const handleHashTagSuggetionClickOutSide = (event) => {

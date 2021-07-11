@@ -33,6 +33,9 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
   const [hashtags, setHashtags] = useState([]);
   const [serverError, setServerError] = useState();
   const [error, setError] = useState({});
+
+  const serverErrorMsg = "Server is not response";
+
   const productNameChangeHandler = (event) => {
     setProductName(event.target.value);
   };
@@ -42,8 +45,13 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
   };
 
   const onInit = async () => {
-    const brandResponse = await localbrandsApis.getAuthInfo();
-    setBrandId(brandResponse.data._id);
+    try {
+      const brandResponse = await localbrandsApis.getAuthInfo();
+      setBrandId(brandResponse.data._id);
+    } catch (err) {
+      setServerError(serverErrorMsg);
+    }
+
     await getCategorySuggetionList();
   };
   const handleNewCategoryChange = (event) => {
@@ -60,7 +68,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
         setCategorySuggetionList(categoryList);
       }
     } catch (err) {
-      handleServerError(err.response.data.error);
+      handleServerError(serverErrorMsg);
     }
   };
 
@@ -78,7 +86,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
       }
     } catch (err) {
       if (err.response.status != API_BAD_REQUEST) {
-        handleServerError(err.response.data.error);
+        handleServerError(serverErrorMsg);
       }
     }
   };
@@ -102,7 +110,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
         }
       } catch (err) {
         if (err.response.status != API_BAD_REQUEST) {
-          handleServerError(err.response.data.error);
+          handleServerError(serverErrorMsg);
         }
       }
     });
@@ -138,11 +146,11 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
         handleNewProductSubmit(generalProduct);
       }
     } catch (err) {
-      if (err.response.status === API_BAD_REQUEST) {
+      if (err.response?.status === API_BAD_REQUEST) {
         const errorParams = err.response.data.errorParams;
         setError(errorParams);
       } else {
-        handleServerError(err.response.data.error);
+        handleServerError(serverErrorMsg);
       }
     }
   };
@@ -158,7 +166,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
         mediaUrls.push(res.data.publicUrl);
       } catch (err) {
         if (err.response.status != API_BAD_REQUEST) {
-          handleServerError(err.response.data.error);
+          handleServerError(serverErrorMsg);
         }
       }
     }
@@ -188,145 +196,156 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
 
   return (
     <>
-      {serverError && (
-        <ServerError
-          errorMsg={serverError}
-          onGoBack={() => history.push("/home")}
-        />
-      )}
-      {!serverError && (
-        <div className={classes.container}>
-          <h1>General Infomation</h1>
-          <form>
-            <div className="form-row">
-              <div className="form-group col-md-10 has-validation">
-                <label for="productName">Product Name</label>
-                <input
-                  type="text"
-                  className={
-                    error?.name ? "form-control is-invalid" : "form-control"
-                  }
-                  id="productName"
-                  onChange={productNameChangeHandler}
-                  value={productName}
-                  placeholder=""
-                />
-                {error?.name && (
-                  <div id="validationServer03Feedback" class="invalid-feedback">
-                    {error.name}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="form-group col-md-10 has-validation">
-                <label for="description">Description</label>
-                <textarea
-                  type="text"
-                  className={
-                    error?.description
-                      ? "form-control is-invalid"
-                      : "form-control"
-                  }
-                  id="description"
-                  value={description}
-                  onChange={descriptionChangeHandler}
-                  placeholder=""
-                />
-                {error?.description && (
-                  <div id="validationServer03Feedback" class="invalid-feedback">
-                    {error.description}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="form-row ">
-              <div className="form-group col-md-5">
-                <label for="category">Category</label>
-
-                <select
-                  class="form-control "
-                  aria-label=".form-select-lg example"
-                  onChange={handleCategorySuggetionChange}
-                  value={categoryId}
-                >
-                  <option value={""}>Choose a category</option>
-                  {categorySuggetionList.map((item) => {
-                    return <option value={item._id}>{item.name}</option>;
-                  })}
-                </select>
-              </div>
-              <div className="form-group has-validation col-md-5">
-                <label for="Category">Or Add New Category</label>
-                <input
-                  type="text"
-                  className={
-                    error?.categoryId
-                      ? "form-control is-invalid"
-                      : "form-control"
-                  }
-                  id="category"
-                  value={newCategory}
-                  onChange={handleNewCategoryChange}
-                  placeholder=""
-                />
-                {error?.categoryId && (
-                  <div id="validationServer03Feedback" class="invalid-feedback">
-                    Don't leave blank on Category
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <CreateProductHashtag
-              handleHashtagsListChange={handleHashtagListChange}
-              updateMode={update}
-              handleServerError={handleServerError}
-            />
-            <div className="form-group has-validation">
-              <label for="productName">Product 's Media</label>
-              <input
-                className={
-                  error?.thumbnailUrl
-                    ? "form-control is-invalid"
-                    : "form-control"
-                }
-                type="file"
-                accept="image/*"
-                multiple={true}
-                onChange={mediaFileInputHandler}
-              />
-              {error?.thumbnailUrl && (
-                <div id="validationServer03Feedback" class="invalid-feedback">
-                  Please add at least 1 image
-                </div>
-              )}
-            </div>
-            <div className="form-row">
-              {mediaUrlList.map((item, key) => {
-                return (
-                  <div className={classes.image_container}>
-                    <img
-                      src={item.mediaUrl}
-                      alt="mediaImg"
-                      className={classes.image}
-                    />
-                    <div className={classes.delete_icon}>
-                      <FontAwesomeIcon
-                        onClick={() => handleImageDelete(key)}
-                        icon={faTimesCircle}
-                      />
+      <div className={classes.container}>
+        {serverError && (
+          <ServerError
+            errorMsg={serverError}
+            onGoBack={() => history.push("/home")}
+          />
+        )}
+        {!serverError && (
+          <div>
+            <h1>General Infomation</h1>
+            <form>
+              <div className="form-row">
+                <div className="form-group col-md-10 has-validation">
+                  <label for="productName">Product Name</label>
+                  <input
+                    type="text"
+                    className={
+                      error?.name ? "form-control is-invalid" : "form-control"
+                    }
+                    id="productName"
+                    onChange={productNameChangeHandler}
+                    value={productName}
+                    placeholder=""
+                  />
+                  {error?.name && (
+                    <div
+                      id="validationServer03Feedback"
+                      class="invalid-feedback"
+                    >
+                      {error.name}
                     </div>
+                  )}
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group col-md-10 has-validation">
+                  <label for="description">Description</label>
+                  <textarea
+                    type="text"
+                    className={
+                      error?.description
+                        ? "form-control is-invalid"
+                        : "form-control"
+                    }
+                    id="description"
+                    value={description}
+                    onChange={descriptionChangeHandler}
+                    placeholder=""
+                  />
+                  {error?.description && (
+                    <div
+                      id="validationServer03Feedback"
+                      class="invalid-feedback"
+                    >
+                      {error.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="form-row ">
+                <div className="form-group col-md-5">
+                  <label for="category">Category</label>
+
+                  <select
+                    class="form-control "
+                    aria-label=".form-select-lg example"
+                    onChange={handleCategorySuggetionChange}
+                    value={categoryId}
+                  >
+                    <option value={""}>Choose a category</option>
+                    {categorySuggetionList.map((item) => {
+                      return <option value={item._id}>{item.name}</option>;
+                    })}
+                  </select>
+                </div>
+                <div className="form-group has-validation col-md-5">
+                  <label for="Category">Or Add New Category</label>
+                  <input
+                    type="text"
+                    className={
+                      error?.categoryId
+                        ? "form-control is-invalid"
+                        : "form-control"
+                    }
+                    id="category"
+                    value={newCategory}
+                    onChange={handleNewCategoryChange}
+                    placeholder=""
+                  />
+                  {error?.categoryId && (
+                    <div
+                      id="validationServer03Feedback"
+                      class="invalid-feedback"
+                    >
+                      Don't leave blank on Category
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <CreateProductHashtag
+                handleHashtagsListChange={handleHashtagListChange}
+                updateMode={update}
+                handleServerError={handleServerError}
+              />
+              <div className="form-group has-validation">
+                <label for="productName">Product 's Media</label>
+                <input
+                  className={
+                    error?.thumbnailUrl
+                      ? "form-control is-invalid"
+                      : "form-control"
+                  }
+                  type="file"
+                  accept="image/*"
+                  multiple={true}
+                  onChange={mediaFileInputHandler}
+                />
+                {error?.thumbnailUrl && (
+                  <div id="validationServer03Feedback" class="invalid-feedback">
+                    Please add at least 1 image
                   </div>
-                );
-              })}
-            </div>
-            <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
-              Next
-            </button>
-          </form>
-        </div>
-      )}
+                )}
+              </div>
+              <div className="form-row">
+                {mediaUrlList.map((item, key) => {
+                  return (
+                    <div className={classes.image_container}>
+                      <img
+                        src={item.mediaUrl}
+                        alt="mediaImg"
+                        className={classes.image}
+                      />
+                      <div className={classes.delete_icon}>
+                        <FontAwesomeIcon
+                          onClick={() => handleImageDelete(key)}
+                          icon={faTimesCircle}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button type="submit" class="btn btn-dark" onClick={handleSubmit}>
+                Next
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </>
   );
 }
