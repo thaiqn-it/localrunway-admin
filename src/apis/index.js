@@ -1,7 +1,5 @@
 import axios from "axios";
-import { getJWToken } from "../constants";
-
-const API_URL = "http://localhost:3000/api";
+import { API_URL, getJWToken } from "../constants";
 
 const defaultInstance = axios.create({
   baseURL: API_URL,
