@@ -1,12 +1,11 @@
-import { WithContext as ReactTags } from "react-tag-input";
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { categoryApis } from "../../apis/category";
 import { productApis } from "../../apis/product";
 import { API_BAD_REQUEST, API_SUCCSES } from "../../constants";
-import AppContext from "../store/app-context";
+
 import { mediaApi } from "../../apis/media";
 import classes from "./GeneralProduct.module.css";
-import { hashtagsApis } from "../../apis/hashtag";
+
 import CreateProductHashtag from "./CreateProductHashtag";
 import { productHashtagApi } from "../../apis/productHastag";
 import { localbrandsApis } from "../../apis/localbrands";
@@ -20,7 +19,6 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
   const history = useHistory();
   const productStatus = { active: "ACTIVE", inactive: "INACTIVE" };
   const productType = { generalProduct: "GP" };
-  const [productId, setProductId] = useState();
 
   const [brandId, setBrandId] = useState();
   const [productName, setProductName] = useState("");

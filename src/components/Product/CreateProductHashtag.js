@@ -1,9 +1,6 @@
-import { WithContext as ReactTags } from "react-tag-input";
-import React, { useContext, useState, useEffect, useRef } from "react";
-import { categoryApis } from "../../apis/category";
-import { productApis } from "../../apis/product";
-import { API_BAD_REQUEST, API_SUCCSES } from "../../constants";
-import AppContext from "../store/app-context";
+import React, { useState, useEffect, useRef } from "react";
+
+import { API_SUCCSES } from "../../constants";
 
 import classes from "./CreateProductHashtag.module.css";
 import { hashtagApis } from "../../apis/hashtag";
@@ -68,29 +65,13 @@ export default function CreateProductHashtag({
   const handleHashTagSuggetionClick = async (index) => {
     const tmp = [...hashtags];
     let selectedHashtag = hashtagSuggetionList[index];
-    if (updateMode === true) {
-      const productHashtagId = await createProductHashtag(selectedHashtag);
-      selectedHashtag = { ...selectedHashtag, productHashtagId };
-    }
 
     tmp.push(selectedHashtag);
     console.log(`add element at ${index}`);
     setHashtags(tmp);
     setTagInput("");
   };
-  const createProductHashtag = async (hashtagId) => {
-    try {
-      const res = await productHashtagApi.createProductHastag(
-        hashtagId,
-        productId
-      );
-      if (res.status === API_SUCCSES) {
-        return res.data.productHashtag._id;
-      }
-    } catch (err) {
-      handleServerError(serverErrorMsg);
-    }
-  };
+
   const deleteProductHashTag = async (hashtagId) => {
     try {
       const res = await productHashtagApi.deleteProductHashtag(
@@ -140,22 +121,20 @@ export default function CreateProductHashtag({
       event.keyCode === 13 ||
       event.keyCode === 32
     ) {
+      event.preventDefault();
       const tmp = [...hashtags];
-      let newHashtag = await createHashtag(tagInput);
+
       const indexOfInput = checkInputHashtagInSuggetionList(tagInput);
       console.log(indexOfInput);
       if (indexOfInput != -1) {
         console.log("handle input duplicate");
         handleHashTagSuggetionClick(indexOfInput);
       } else {
-        if (updateMode === true) {
-          const productHashtagId = await createProductHashtag(newHashtag._id);
-          newHashtag = { ...newHashtag, productHashtagId };
-          console.log(newHashtag);
-          tmp.push(newHashtag);
+        const newHashtag = await createHashtag(tagInput);
+        console.log(newHashtag);
+        tmp.push(newHashtag);
 
-          setHashtags(tmp);
-        }
+        setHashtags(tmp);
       }
 
       setTagInput("");
