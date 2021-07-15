@@ -5,6 +5,7 @@ import "./Login.css";
 import { API_SUCCSES, JWT_TOKEN } from "../../constants";
 import { authService } from "../../service/auth";
 import { useHistory } from "react-router-dom";
+import { loadToken } from "../../apis";
 
 const Login = (props) => {
   //set page title
@@ -41,6 +42,7 @@ const Login = (props) => {
         console.log(res.data.token);
         localStorage.setItem(JWT_TOKEN, res.data.token);
         props.onLogin();
+        loadToken();
         history.push("/home");
       }
     } catch (err) {
