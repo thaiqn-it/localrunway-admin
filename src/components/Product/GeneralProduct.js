@@ -193,7 +193,7 @@ export default function GeneralProduct({ update, handleNewProductSubmit }) {
     setServerError(errorMsg);
   };
   useEffect(() => {
-    await onInit();
+    onInit();
   }, []);
 
   return (
