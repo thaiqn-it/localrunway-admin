@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/jquery/dist/jquery.min.js";
 import "./App.css";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect,
+} from "react-router-dom";
 
 import "./components/FontawesomeIcons/index";
 import Login from "./components/Login/Login";
@@ -78,10 +84,15 @@ function App() {
           )}
 
           {isLoggedIn && (
-            <Route
-              path="/home"
-              component={() => <Landing isLoggedIn={isLoggedIn} />}
-            />
+            <>
+              <Route exact path="/">
+                <Redirect to="/home" />
+              </Route>
+              <Route
+                path="/home"
+                component={() => <Landing isLoggedIn={isLoggedIn} />}
+              />
+            </>
           )}
         </Switch>
       </div>

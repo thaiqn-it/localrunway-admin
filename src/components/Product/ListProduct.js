@@ -8,6 +8,7 @@ import { useHistory } from "react-router-dom";
 import classes from "./ListProduct.module.css";
 import { PRODUCT_LIST_HEADER } from "../../constants/control-default-value";
 import { localbrandsApis } from "../../apis/localbrands";
+import { loadToken } from "../../apis";
 
 export default function ListProduct(props) {
   useLayoutEffect(() => {
@@ -51,6 +52,7 @@ export default function ListProduct(props) {
 
   const onInit = async () => {
     try {
+      loadToken();
       const brandResponse = await localbrandsApis.getAuthInfo();
       setBrandId(brandResponse.data._id);
 
