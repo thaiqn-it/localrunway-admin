@@ -234,12 +234,13 @@ const ProductDetail = (props) => {
         await getProductHashtags(productId);
         await getChildrenProducts(productId);
       } else {
-        const prodId = localStorage.getItem(PRODUCT_DETAIL_ID);
-        setProductId(prodId);
-        await getExistingGeneralProduct(prodId);
-        await getCategory(prodId);
-        await getProductHashtags(prodId);
-        await getChildrenProducts(productId);
+        // const prodId = localStorage.getItem(PRODUCT_DETAIL_ID);
+        // setProductId(prodId);
+        // await getExistingGeneralProduct(prodId);
+        // await getCategory(prodId);
+        // await getProductHashtags(prodId);
+        // await getChildrenProducts(productId);
+        history.push("/home");
       }
     }
     initData();

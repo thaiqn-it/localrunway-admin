@@ -91,7 +91,7 @@ export default function ListProduct(props) {
 
   const updateProduct = (id) => {
     props.onGetProductId(id);
-    localStorage.setItem(PRODUCT_DETAIL_ID, id);
+    // localStorage.setItem(PRODUCT_DETAIL_ID, id);
     history.replace("/home/productDetail");
   };
 
